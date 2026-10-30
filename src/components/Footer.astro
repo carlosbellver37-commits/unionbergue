@@ -1,0 +1,86 @@
+---
+import Logo from './ui/Logo.astro';
+import { site, tiendas, horario, nav } from '../data/site';
+const anio = new Date().getFullYear();
+---
+
+<footer class="pie" data-pie>
+  <div class="pie__marquesina" aria-hidden="true">
+    <div class="pie__pista" data-marquee>
+      {Array.from({ length: 2 }).map(() => (
+        <span>Pan · Pastelería · Cafetería · Salados · Temporada · Gourmet · Heladería ·&nbsp;</span>
+      ))}
+    </div>
+  </div>
+
+  <div class="pie__grid wrap">
+    <div class="pie__marca">
+      <Logo class="pie__logo" />
+      <p>{site.lema}. Obrador familiar con {site.anios} en Madrid norte.</p>
+    </div>
+
+    {tiendas.map((t) => (
+      <div class="pie__col">
+        <h3>{t.nombre}</h3>
+        <p>{t.direccion}<br />{t.cp}</p>
+        <p class="pie__mini">{t.acceso}</p>
+        <p><a href={`tel:${t.telefonoHref}`} class="link-trazo">{t.telefono}</a></p>
+        <p class="pie__mini">{horario.general}</p>
+      </div>
+    ))}
+
+    <nav class="pie__col" aria-label="Pie de página">
+      <h3>La casa</h3>
+      <ul>
+        {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+        <li><a href="/encargos">Encargos</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="pie__legal wrap">
+    <p>© {anio} {site.legal.razonesSociales.join(' · ')} · CIF {site.legal.cif}</p>
+    <ul>
+      <li><a href="/aviso-legal">Aviso legal</a></li>
+      <li><a href="/privacidad">Privacidad</a></li>
+      <li><a href="/cookies">Cookies</a></li>
+      <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .pie { background: var(--corteza); color: var(--harina); padding-bottom: 2rem; overflow: hidden; }
+  .pie__marquesina { border-bottom: 1px solid color-mix(in srgb, var(--harina) 18%, transparent); padding-block: 1.5rem; white-space: nowrap; }
+  .pie__pista { display: inline-flex; animation: deslizar 40s linear infinite; animation-play-state: paused; }
+  .pie.is-visible .pie__pista { animation-play-state: running; }
+  .pie__pista span { font-family: var(--font-display); font-style: italic; font-size: var(--text-2xl); line-height: 1; color: var(--caramelo-claro); }
+  @keyframes deslizar { to { transform: translateX(-50%); } }
+
+  .pie__grid { display: grid; grid-template-columns: 1.4fr repeat(2, 1fr); gap: 3rem; padding-block: 4rem; }
+  .pie__marca { display: grid; gap: 1.5rem; justify-items: start; max-width: 26rem; }
+  .pie :global(.pie__logo) { width: 9rem; color: var(--harina); }
+  .pie h3 { font-size: var(--text-lg); margin-bottom: 1rem; color: var(--caramelo-claro); }
+  .pie__col { display: grid; gap: 0.4rem; align-content: start; font-size: var(--text-sm); }
+  .pie__mini { opacity: 0.7; font-size: var(--text-xs); }
+  .pie ul { list-style: none; padding: 0; display: grid; gap: 0.3rem; }
+  .pie__col a:not(.link-trazo), .pie__legal a { text-decoration: none; opacity: 0.85; }
+  .pie__col a:hover, .pie__legal a:hover { opacity: 1; color: var(--caramelo-claro); }
+  .pie__legal {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+    padding-top: 2rem; border-top: 1px solid color-mix(in srgb, var(--harina) 18%, transparent);
+    font-size: var(--text-xs); opacity: 0.75;
+  }
+  .pie__legal ul { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+
+  @media (max-width: 960px) { .pie__grid { grid-template-columns: 1fr 1fr; } .pie__marca { grid-column: 1 / -1; } }
+  @media (max-width: 560px) { .pie__grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  // La marquesina solo se mueve mientras el pie está en pantalla
+  const pie = document.querySelector<HTMLElement>('[data-pie]');
+  if (pie) {
+    new IntersectionObserver(([e]) => pie.classList.toggle('is-visible', e.isIntersecting)).observe(pie);
+  }
+</script>

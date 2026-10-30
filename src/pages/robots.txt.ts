@@ -1,0 +1,7 @@
+/** robots.txt con el dominio de astro.config.mjs (un solo sitio donde cambiarlo). */
+import type { APIRoute } from 'astro';
+
+export const GET: APIRoute = ({ site }) =>
+  new Response(`User-agent: *\nAllow: /\n\nSitemap: ${new URL('sitemap-index.xml', site)}\n`, {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });

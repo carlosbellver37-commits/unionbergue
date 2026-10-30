@@ -1,0 +1,250 @@
+---
+/**
+ * Visor de catálogos dentro de la web (sin abrir otra pestaña). Las páginas son
+ * imágenes generadas desde los PDF por herramientas/fotos_sectores.py.
+ * Se abre desde cualquier botón con data-abrir-catalogo="<id>".
+ * Por defecto la página se ajusta al ancho (legible, con scroll); se puede
+ * cambiar a "página completa" con el botón o haciendo clic en la página.
+ */
+import catalogos from '../../data/catalogos.json';
+---
+
+<dialog class="visor" aria-labelledby="visor-titulo" data-visor data-lenis-prevent>
+  <header class="visor__cabeza">
+    <h4 class="visor__titulo" id="visor-titulo" data-visor-titulo></h4>
+    <p class="visor__pagina" aria-live="polite" data-visor-pagina></p>
+    <button type="button" class="visor__modo" aria-pressed="false" data-visor-modo>Ver página completa</button>
+    <a class="visor__pdf" href="#" download data-visor-pdf>Descargar PDF</a>
+    <button type="button" class="visor__cerrar" aria-label="Cerrar catálogo" autofocus data-visor-cerrar>×</button>
+  </header>
+
+  <ol class="visor__miniaturas" data-visor-minis></ol>
+
+  <div class="visor__zona">
+    <div class="visor__hoja" data-visor-hoja>
+      <img class="visor__img" alt="" data-visor-img />
+    </div>
+    <button type="button" class="visor__flecha visor__flecha--ant" aria-label="Página anterior" data-visor-ant>‹</button>
+    <button type="button" class="visor__flecha visor__flecha--sig" aria-label="Página siguiente" data-visor-sig>›</button>
+  </div>
+</dialog>
+
+<script is:inline type="application/json" id="catalogos-datos" set:html={JSON.stringify(catalogos)}></script>
+
+<style>
+  .visor {
+    width: 100vw;
+    height: 100svh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: #f4eee0;
+    color: #3a241c;
+    overflow: hidden;
+  }
+  .visor[open] {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    animation: visor 400ms var(--ease-out);
+  }
+  .visor::backdrop { background: rgb(36 22 14 / 0.75); }
+  @keyframes visor {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .visor__cabeza {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: calc(0.7rem + env(safe-area-inset-top)) max(1.2rem, env(safe-area-inset-right)) 0.7rem max(1.6rem, env(safe-area-inset-left));
+    border-bottom: 2px solid #964b36;
+  }
+  .visor__titulo { font-family: 'Cormorant Garamond', 'Garamond', serif; font-weight: 500; font-size: var(--text-lg); }
+  .visor__pagina { font-size: var(--text-xs); letter-spacing: 0.12em; color: #964b36; }
+  .visor__modo {
+    margin-left: auto;
+    padding: 0.45rem 1rem;
+    border: 1px solid #964b36;
+    border-radius: 999px;
+    background: none;
+    color: #964b36;
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .visor__modo:hover { background: #964b36; color: #f4eee0; }
+  .visor__pdf { font-size: var(--text-sm); color: inherit; }
+  .visor__cerrar { border: 0; background: none; font-size: 2.2rem; line-height: 1; color: inherit; cursor: pointer; padding: 0 0.3rem; }
+
+  /* Miniaturas en columna a la izquierda (se crean por script: estilos globales) */
+  .visor__miniaturas {
+    list-style: none;
+    display: grid;
+    align-content: start;
+    gap: 0.8rem;
+    padding: 1rem;
+    overflow-y: auto;
+    border-right: 1px solid rgb(150 75 54 / 0.35);
+    scrollbar-width: thin;
+  }
+  .visor__miniaturas :global(button) { display: block; width: 100%; padding: 0; border: 2px solid transparent; background: none; cursor: pointer; opacity: 0.55; transition: opacity var(--dur-fast); }
+  .visor__miniaturas :global(button:hover) { opacity: 0.9; }
+  .visor__miniaturas :global(button[aria-current='true']) { border-color: #964b36; opacity: 1; }
+  .visor__miniaturas :global(img) { display: block; width: 100%; height: auto; }
+
+  .visor__zona { position: relative; min-height: 0; }
+  .visor__hoja { height: 100%; overflow-y: auto; padding: 1.5rem 5rem 3rem; scrollbar-width: thin; }
+  /* Ajustada al ancho: grande y legible, con scroll vertical */
+  .visor__img {
+    display: block;
+    width: 100%;
+    max-width: 62rem;
+    height: auto;
+    margin-inline: auto;
+    box-shadow: 0 20px 44px -22px rgb(58 36 28 / 0.55);
+    cursor: zoom-out;
+    transition: opacity 250ms ease;
+  }
+  /* Página completa: cabe entera en pantalla */
+  .visor.is-completa .visor__hoja { display: grid; place-items: center; overflow: hidden; padding: 1rem 5rem; }
+  .visor.is-completa .visor__img { width: auto; max-width: 100%; max-height: calc(100svh - 7rem); cursor: zoom-in; }
+  .visor__img.is-cargando { opacity: 0.2; }
+
+  .visor__flecha {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid #964b36;
+    border-radius: 50%;
+    background: #f4eee0;
+    color: #964b36;
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast);
+  }
+  .visor__flecha:hover:not(:disabled) { background: #964b36; color: #f4eee0; }
+  .visor__flecha:disabled { opacity: 0.25; cursor: default; }
+  .visor__flecha--ant { left: 1rem; }
+  .visor__flecha--sig { right: 1.4rem; }
+
+  @media (max-width: 760px) {
+    .visor[open] { grid-template-columns: 100%; grid-template-rows: auto minmax(0, 1fr); }
+    .visor__miniaturas, .visor__pdf, .visor__modo { display: none; }
+    .visor__hoja { padding: 0.8rem 0.8rem 5rem; }
+    .visor__flecha { top: auto; bottom: 1rem; translate: none; }
+  }
+</style>
+
+<script>
+  type Catalogo = { id: string; titulo: string; pdf: string; paginas: string[] };
+
+  const visor = document.querySelector<HTMLDialogElement>('[data-visor]');
+  const datos = document.getElementById('catalogos-datos');
+
+  if (visor && datos) {
+    const catalogos: Catalogo[] = JSON.parse(datos.textContent ?? '[]');
+    const $ = <T extends Element>(sel: string) => visor.querySelector<T>(sel)!;
+    const img = $<HTMLImageElement>('[data-visor-img]');
+    const hoja = $<HTMLElement>('[data-visor-hoja]');
+    const titulo = $<HTMLElement>('[data-visor-titulo]');
+    const numero = $<HTMLElement>('[data-visor-pagina]');
+    const pdf = $<HTMLAnchorElement>('[data-visor-pdf]');
+    const minis = $<HTMLOListElement>('[data-visor-minis]');
+    const ant = $<HTMLButtonElement>('[data-visor-ant]');
+    const sig = $<HTMLButtonElement>('[data-visor-sig]');
+    const modo = $<HTMLButtonElement>('[data-visor-modo]');
+
+    let actual: Catalogo | null = null;
+    let pagina = 0;
+    /** Miniatura de una página (herramientas/miniaturas_catalogos.py). */
+    const mini = (src: string) => src.replace(/\/(\d+)\.webp$/, '/mini/$1.webp');
+    const precargadas = new Set<string>();
+    const precargar = (src: string | undefined) => {
+      if (!src || precargadas.has(src)) return;
+      precargadas.add(src);
+      new Image().src = src;
+    };
+
+    const mostrar = (n: number) => {
+      if (!actual) return;
+      pagina = Math.max(0, Math.min(n, actual.paginas.length - 1));
+      const src = new URL(actual.paginas[pagina], location.href).href;
+      // Si ya es la página que se ve no habrá evento load: no marcarla como cargando
+      if (img.src !== src) {
+        img.classList.add('is-cargando');
+        img.src = src;
+      }
+      // La siguiente y la anterior, listas para pasar de página sin esperas
+      precargar(actual.paginas[pagina + 1]);
+      precargar(actual.paginas[pagina - 1]);
+      img.alt = `${actual.titulo}, página ${pagina + 1}`;
+      numero.textContent = `${pagina + 1} / ${actual.paginas.length}`;
+      ant.disabled = pagina === 0;
+      sig.disabled = pagina === actual.paginas.length - 1;
+      hoja.scrollTop = 0;
+      minis.querySelectorAll('button').forEach((b, i) => {
+        b.setAttribute('aria-current', String(i === pagina));
+        if (i === pagina) b.scrollIntoView({ block: 'nearest' });
+      });
+    };
+    img.addEventListener('load', () => img.classList.remove('is-cargando'));
+    img.addEventListener('error', () => img.classList.remove('is-cargando'));
+
+    const completa = (si: boolean) => {
+      visor.classList.toggle('is-completa', si);
+      modo.setAttribute('aria-pressed', String(si));
+      modo.textContent = si ? 'Ajustar al ancho' : 'Ver página completa';
+    };
+    modo.addEventListener('click', () => completa(!visor.classList.contains('is-completa')));
+    img.addEventListener('click', () => completa(!visor.classList.contains('is-completa')));
+
+    const abrir = (id: string) => {
+      actual = catalogos.find((c) => c.id === id) ?? null;
+      if (!actual) return;
+      titulo.textContent = actual.titulo;
+      pdf.href = actual.pdf;
+      minis.replaceChildren(
+        ...actual.paginas.map((src, i) => {
+          const li = document.createElement('li');
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('aria-label', `Ir a la página ${i + 1}`);
+          const miniatura = document.createElement('img');
+          miniatura.src = mini(src);
+          miniatura.alt = '';
+          miniatura.loading = 'lazy';
+          miniatura.decoding = 'async';
+          b.append(miniatura);
+          b.addEventListener('click', () => mostrar(i));
+          li.append(b);
+          return li;
+        }),
+      );
+      completa(false);
+      visor.showModal();
+      document.documentElement.style.overflow = 'hidden';
+      mostrar(0);
+    };
+
+    document.addEventListener('click', (e) => {
+      const boton = (e.target as HTMLElement).closest<HTMLElement>('[data-abrir-catalogo]');
+      if (boton) abrir(boton.dataset.abrirCatalogo!);
+    });
+    ant.addEventListener('click', () => mostrar(pagina - 1));
+    sig.addEventListener('click', () => mostrar(pagina + 1));
+    $<HTMLButtonElement>('[data-visor-cerrar]').addEventListener('click', () => visor.close());
+    visor.addEventListener('close', () => { document.documentElement.style.overflow = ''; });
+    visor.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') mostrar(pagina + 1);
+      if (e.key === 'ArrowLeft') mostrar(pagina - 1);
+    });
+  }
+</script>

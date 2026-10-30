@@ -1,0 +1,493 @@
+---
+import Base from '../layouts/Base.astro';
+import TituloMarca from '../components/ui/TituloMarca.astro';
+import { site, tiendas, encargos, horario, hayWhatsapp, whatsappUrl, PENDIENTE } from '../data/site';
+
+// Qué encargar: mismos productos que el expositor (sepia → color al elegir)
+const tipos = [
+  { id: 'pasteleria', nombre: 'Tarta o pasteles', img: 'pasteleria' },
+  { id: 'pan', nombre: 'Pan y bollería', img: 'pan' },
+  { id: 'salados', nombre: 'Salados', img: 'salados' },
+  { id: 'temporada', nombre: 'Temporada', img: 'temporada' },
+  { id: 'gourmet', nombre: 'Gourmet', img: 'gourmet' },
+  { id: 'otro', nombre: 'Otra consulta', img: 'cafeteria' },
+];
+
+// El envío por email necesita la clave de Web3Forms. Sin WhatsApp ni email el
+// formulario no llegaría a nadie: en su lugar se pide llamar a la tienda.
+const hayEmail = Boolean(site.web3formsKey);
+const hayFormulario = hayWhatsapp || hayEmail;
+const tienda = tiendas[0];
+
+const pasos = [
+  {
+    titulo: hayFormulario ? 'Cuéntanos' : 'Llámanos',
+    texto: `${hayFormulario ? 'Qué quieres' : 'Cuéntanos qué quieres'}, para cuántas personas y para qué día. Las tartas de encargo pueden ir dedicadas: dinos el mensaje.`,
+  },
+  {
+    titulo: 'Te confirmamos',
+    texto: hayFormulario
+      ? 'Te escribimos con disponibilidad y precio. Sin pagos por adelantado en la web.'
+      : 'Te decimos si hay disponibilidad y el precio de tu encargo.',
+  },
+  { titulo: 'Recoges', texto: 'En nuestra tienda de Las Tablas, el día acordado y listo para llevar.' },
+];
+
+// Solo los datos ya confirmados por el cliente (los pendientes se verían como "X días")
+const condiciones = [
+  { dato: encargos.antelacionMinima, texto: 'de antelación mínima para tartas' },
+  { dato: encargos.tamanos, texto: 'según el modelo de tarta' },
+  { dato: encargos.raciones, texto: 'según el tamaño' },
+].filter((c) => !c.dato.includes(PENDIENTE));
+
+const descripcion = hayFormulario
+  ? 'Encarga tu tarta, bandeja de salados o productos de temporada en Pastelería Bergue: desde la web o por teléfono.'
+  : `Encarga tu tarta, bandeja de salados o productos de temporada en Pastelería Bergue llamando al ${tienda.telefono}.`;
+---
+
+<Base title="Encargos" description={descripcion}>
+  <section class="enc">
+    <header class="enc__cabeza wrap">
+      <TituloMarca texto="Encargos" id="encargos-titulo" class="enc__titulo" />
+      <p class="enc__lead">
+        Cumpleaños, comidas familiares, reuniones de trabajo o un capricho de temporada.{' '}
+        <em>Cuéntanos qué celebras y nosotros nos encargamos del resto.</em>
+      </p>
+    </header>
+
+    <ol class="pasos wrap">
+      {pasos.map((p, i) => (
+        <li class="paso">
+          <span class="paso__num">{String(i + 1).padStart(2, '0')}</span>
+          <h2 class="paso__titulo">{p.titulo}</h2>
+          <p>{p.texto}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="enc__cuerpo wrap">
+      {!hayFormulario && (
+        <div class="llamar">
+          <h2 class="form__leyenda">Encárgalo por teléfono</h2>
+          <p class="form__ayuda">
+            Llámanos a la tienda de Las Tablas y te tomamos nota: qué quieres, para cuántas personas,
+            el día de recogida y, si es una tarta, la dedicatoria.
+          </p>
+          <a class="envio envio--principal llamar__boton" href={`tel:${tienda.telefonoHref}`}>
+            <span class="envio__canal">{tienda.telefono}</span>
+            <span class="envio__nota">Llamar a la tienda · {horario.general}</span>
+            <span class="envio__flecha" aria-hidden="true">→</span>
+          </a>
+          <p class="form__ayuda">O pásate por {tienda.direccion} y lo encargas en el mostrador.</p>
+        </div>
+      )}
+      {hayFormulario && (
+      <form class="form" data-encargo data-clave={site.web3formsKey} data-whatsapp={site.whatsapp} data-email={site.email} novalidate>
+        <fieldset class="form__bloque">
+          <legend class="form__leyenda"><span>01</span> ¿Qué quieres encargar?</legend>
+          <div class="tipos">
+            {tipos.map((t, i) => (
+              <label class="tipo">
+                <input type="radio" name="tipo" value={t.nombre} required checked={i === 0} />
+                <span class="tipo__img">
+                  <img class="tipo__sepia" src={`/img/expositor/${t.img}-sepia.webp`} alt="" loading="lazy" />
+                  <img class="tipo__color" src={`/img/expositor/${t.img}-color.webp`} alt="" loading="lazy" />
+                </span>
+                <span class="tipo__nombre">{t.nombre}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="form__bloque">
+          <legend class="form__leyenda"><span>02</span> Los detalles</legend>
+          <div class="form__grid">
+            <div class="campo campo--ancho">
+              <label for="f-msg">Cuéntanos</label>
+              <textarea id="f-msg" name="mensaje" rows="4" required maxlength="1500" placeholder="Ej.: tarta Selva Negra para 12 personas, con «Feliz cumpleaños, Lucía»"></textarea>
+            </div>
+            <div class="campo">
+              <label for="f-personas">Personas</label>
+              <input id="f-personas" name="personas" type="number" min="1" max="500" inputmode="numeric" placeholder="12" />
+            </div>
+            <div class="campo">
+              <label for="f-fecha">Día de recogida en Las Tablas</label>
+              <input id="f-fecha" name="fecha" type="date" required data-min-hoy />
+            </div>
+            <input type="hidden" name="tienda" value={tiendas[0].nombre} />
+          </div>
+        </fieldset>
+
+        <fieldset class="form__bloque">
+          <legend class="form__leyenda"><span>03</span> Tus datos</legend>
+          <div class="form__grid">
+            <div class="campo">
+              <label for="f-nombre">Nombre</label>
+              <input id="f-nombre" name="nombre" type="text" autocomplete="name" required maxlength="80" />
+            </div>
+            <div class="campo">
+              <label for="f-tel">Teléfono</label>
+              <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required pattern="[0-9 +\(\)\-]{9,20}" />
+            </div>
+            <div class="campo campo--ancho">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="120" />
+            </div>
+          </div>
+          <!-- Trampa antispam: los humanos no la ven ni la rellenan -->
+          <input type="checkbox" name="botcheck" class="trampa" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <label class="check">
+            <input type="checkbox" name="privacidad" required />
+            <span>He leído y acepto la <a href="/privacidad" target="_blank">política de privacidad</a>.</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="form__bloque">
+          <legend class="form__leyenda"><span>04</span> Envíanos tu encargo</legend>
+          <p class="form__ayuda">{hayWhatsapp && hayEmail && 'Elige cómo prefieres enviarlo. '}Con todos tus datos, te contestamos para confirmar disponibilidad y precio.</p>
+          <div class:list={['envios', { 'envios--uno': !(hayWhatsapp && hayEmail) }]}>
+            {hayWhatsapp && (
+              <button type="submit" class="envio envio--principal" data-canal="whatsapp">
+                <span class="envio__canal">Por WhatsApp</span>
+                <span class="envio__nota">Recomendado · respuesta más rápida</span>
+                <span class="envio__flecha" aria-hidden="true">→</span>
+              </button>
+            )}
+            {hayEmail && (
+              <button type="submit" class:list={['envio', { 'envio--principal': !hayWhatsapp }]} data-canal="email">
+                <span class="envio__canal" data-envio-texto>Por email</span>
+                <span class="envio__nota">Se envía desde aquí · te respondemos por correo</span>
+                <span class="envio__flecha" aria-hidden="true">→</span>
+              </button>
+            )}
+          </div>
+          <p class="form__aviso" role="alert" data-error hidden>Revisa los campos marcados.</p>
+
+          <div class="enviado" data-enviado hidden tabindex="-1">
+            <p class="enviado__titulo">¡Encargo enviado!</p>
+            <p class="enviado__texto">Lo hemos recibido en nuestro correo. Te escribiremos en breve a <strong data-enviado-email></strong> para confirmarlo.</p>
+          </div>
+        </fieldset>
+      </form>
+      )}
+
+      <aside class="lateral">
+        {condiciones.length > 0 && (
+          <div class="tarjeta">
+            <h2 class="tarjeta__titulo">Antes de encargar</h2>
+            <ul class="tarjeta__datos">
+              {condiciones.map((c) => <li><strong>{c.dato}</strong> {c.texto}</li>)}
+            </ul>
+          </div>
+        )}
+        <div class="tarjeta">
+          <h2 class="tarjeta__titulo">{hayFormulario ? '¿Prefieres llamar?' : 'Contacto'}</h2>
+          <ul class="tarjeta__datos">
+            {tiendas.map((t) => (
+              <li><strong>{t.nombre}</strong> <a href={`tel:${t.telefonoHref}`}>{t.telefono}</a></li>
+            ))}
+            <li>
+              <strong>WhatsApp</strong>
+              {hayWhatsapp
+                ? <a href={whatsappUrl('Hola, quería hacer un encargo.')} target="_blank" rel="noopener">Escríbenos</a>
+                : <span class="tarjeta__pronto">Próximamente</span>}
+            </li>
+            <li><strong>Email</strong> <a href={`mailto:${site.email}`}>{site.email}</a></li>
+          </ul>
+          <p class="tarjeta__nota">{horario.general}</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .enc {
+    --cafe: #3a241c;
+    --terracota: #964b36;
+    background: #f4eee0;
+    color: var(--cafe);
+    padding: 6rem 0 var(--space-section);
+  }
+  .enc__cabeza { display: grid; gap: clamp(1rem, 2vw, 1.6rem); }
+  .enc__lead {
+    margin-top: clamp(0.8rem, 2vw, 1.6rem);
+    max-width: 44rem;
+    font-family: 'Cormorant Garamond', 'Garamond', serif;
+    font-size: clamp(1.4rem, 1rem + 1.3vw, 2.2rem);
+    line-height: 1.3;
+  }
+  .enc__lead em { color: var(--terracota); }
+
+  /* Cómo funciona */
+  .pasos {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3vw, 3rem);
+    margin-block: clamp(3rem, 6vw, 5rem);
+  }
+  .paso { display: grid; gap: 0.5rem; align-content: start; padding-top: 1rem; border-top: 1px solid var(--terracota); }
+  .paso__num { font-size: var(--text-xs); letter-spacing: 0.14em; color: var(--terracota); }
+  .paso__titulo { font-family: 'Cormorant Garamond', 'Garamond', serif; font-weight: 500; font-size: var(--text-xl); line-height: 1; }
+  .paso p { font-size: var(--text-sm); color: #5a4034; }
+
+  .enc__cuerpo { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: clamp(2rem, 6vw, 6rem); align-items: start; }
+
+  /* Formulario */
+  .form { display: grid; gap: clamp(2.5rem, 5vw, 3.5rem); }
+  .form__bloque { border: 0; padding: 0; margin: 0; display: grid; gap: 1.4rem; min-width: 0; }
+  .form__leyenda {
+    padding: 0;
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: clamp(1.8rem, 1rem + 2vw, 2.8rem);
+    letter-spacing: -0.03em;
+    color: var(--terracota);
+  }
+  .form__leyenda span { font-family: var(--font-body); font-weight: 400; font-size: var(--text-xs); letter-spacing: 0.14em; vertical-align: super; margin-right: 0.4rem; }
+
+  .tipos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .tipo { position: relative; display: grid; gap: 0.5rem; justify-items: center; padding: 1rem 0.8rem 0.9rem; cursor: pointer; border: 1px solid rgb(150 75 54 / 0.3); transition: border-color var(--dur-fast), background-color var(--dur-fast); }
+  .tipo input { position: absolute; opacity: 0; }
+  .tipo__img { position: relative; width: 100%; aspect-ratio: 4 / 3; }
+  .tipo__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity 500ms ease, transform 500ms var(--ease-out); }
+  .tipo__color { opacity: 0; }
+  .tipo__nombre { font-family: 'Cormorant Garamond', 'Garamond', serif; font-size: var(--text-lg); line-height: 1.1; text-align: center; }
+  .tipo:hover { border-color: var(--terracota); }
+  .tipo:has(input:checked) { border: 2px solid var(--terracota); background: #efe5d3; }
+  .tipo:has(input:checked) .tipo__color { opacity: 1; }
+  .tipo:has(input:checked) .tipo__sepia { opacity: 0; }
+  .tipo:has(input:checked) img { transform: scale(1.06); }
+  .tipo:has(input:focus-visible) { outline: 2px solid var(--terracota); outline-offset: 3px; }
+
+  .form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem 1.5rem; }
+  .campo { display: grid; gap: 0.4rem; min-width: 0; }
+  .campo--ancho { grid-column: 1 / -1; }
+  .campo label { font-size: var(--text-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracota); }
+  .campo input, .campo textarea {
+    width: 100%;
+    padding: 0.6rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--cafe);
+    border-radius: 0;
+    background: transparent;
+    font-family: 'Cormorant Garamond', 'Garamond', serif;
+    font-size: var(--text-lg);
+    color: var(--cafe);
+  }
+  .campo textarea { resize: vertical; line-height: 1.4; }
+  .campo input::placeholder, .campo textarea::placeholder { color: rgb(58 36 28 / 0.4); }
+  .campo input:focus, .campo textarea:focus { outline: none; border-bottom: 2px solid var(--terracota); }
+  .campo [aria-invalid='true'] { border-bottom-color: #b8434f; }
+
+
+  .check { display: flex; gap: 0.8rem; align-items: flex-start; font-size: var(--text-sm); }
+  .check { cursor: pointer; }
+  .check input { width: 1.4rem; height: 1.4rem; accent-color: var(--terracota); margin-top: 0; flex: none; cursor: pointer; }
+  .check a { color: inherit; }
+
+  .form__aviso { color: #b8434f; font-size: var(--text-sm); }
+  .form__aviso[hidden] { display: none; }
+
+  .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .envio[aria-busy='true'] { cursor: progress; opacity: 0.75; }
+  .enviado { display: grid; gap: 0.4rem; padding: 1.3rem 1.5rem; border-left: 3px solid var(--terracota); background: #efe5d3; animation: aparece 400ms var(--ease-out); }
+  .enviado[hidden] { display: none; }
+  .enviado__titulo {
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: clamp(1.5rem, 1rem + 1vw, 2rem);
+    color: var(--terracota);
+  }
+  .enviado__texto { font-size: var(--text-sm); color: #5a4034; }
+  @keyframes aparece { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .form__aviso.is-ok { color: var(--terracota); }
+
+  .form__ayuda { font-size: var(--text-sm); color: #5a4034; max-width: 36rem; margin-top: -0.6rem; }
+  .envios { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .envios--uno { grid-template-columns: minmax(0, 32rem); }
+  .envio {
+    position: relative;
+    display: grid;
+    gap: 0.3rem;
+    padding: 1.3rem 3.5rem 1.3rem 1.5rem;
+    border: 1.5px solid var(--terracota);
+    background: transparent;
+    color: var(--cafe);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur) var(--ease-out);
+  }
+  .envio--principal { background: var(--cafe); border-color: var(--cafe); color: #f4eee0; }
+  .envio__canal {
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: clamp(1.4rem, 1rem + 1vw, 1.9rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .envio__nota { font-size: var(--text-xs); letter-spacing: 0.06em; opacity: 0.8; }
+  .envio__flecha { position: absolute; right: 1.3rem; top: 50%; translate: 0 -50%; font-size: 1.6rem; transition: transform var(--dur) var(--ease-out); }
+  .envio:hover, .envio:focus-visible { transform: translateY(-3px); }
+  .envio:hover .envio__flecha { transform: translateX(0.3rem); }
+  .envio:not(.envio--principal):hover { background: var(--terracota); color: #f4eee0; }
+  .envio--principal:hover { background: var(--terracota); border-color: var(--terracota); }
+
+  /* Sin formulario: encargo por teléfono */
+  .llamar { display: grid; gap: 1.4rem; align-content: start; }
+  .llamar .form__ayuda { margin-top: 0; }
+  .llamar__boton { max-width: 32rem; text-decoration: none; }
+
+  /* Lateral: recuadros abiertos, como los de la tienda en Conócenos */
+  .lateral { position: sticky; top: 6rem; display: grid; gap: 2rem; }
+  .tarjeta {
+    position: relative;
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.6rem 1.8rem;
+    border-left: 1.5px solid var(--terracota);
+    border-bottom: 1.5px solid var(--terracota);
+  }
+  .tarjeta::before, .tarjeta::after { content: ''; position: absolute; background: var(--terracota); }
+  .tarjeta::before { top: 0; left: 0; width: 62%; height: 1.5px; }
+  .tarjeta::after { right: 0; bottom: 0; width: 1.5px; height: 58%; }
+  .tarjeta__titulo { font-family: 'Cormorant Garamond', 'Garamond', serif; font-weight: 500; font-size: var(--text-xl); line-height: 1; }
+  .tarjeta__datos { list-style: none; padding: 0; display: grid; gap: 0.5rem; font-size: var(--text-sm); color: #5a4034; }
+  .tarjeta__datos strong { color: var(--terracota); font-weight: 500; margin-right: 0.3rem; }
+  .tarjeta__datos a { color: var(--cafe); }
+  .tarjeta__pronto { font-style: italic; }
+  .tarjeta__nota { font-size: var(--text-xs); letter-spacing: 0.06em; color: var(--terracota); }
+
+  @media (max-width: 900px) {
+    .enc__cuerpo { grid-template-columns: 1fr; }
+    .lateral { position: static; }
+  }
+  @media (max-width: 600px) {
+    .pasos, .form__grid, .envios { grid-template-columns: 1fr; }
+    .tipos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-encargo]');
+  const aviso = document.querySelector<HTMLElement>('[data-error]');
+  const fecha = document.querySelector<HTMLInputElement>('[data-min-hoy]');
+
+  // Hoy en hora local (toISOString da la fecha UTC: de 00:00 a 02:00 en Madrid sería ayer)
+  const hoy = new Date();
+  const dos = (n: number) => String(n).padStart(2, '0');
+  if (fecha) fecha.min = `${hoy.getFullYear()}-${dos(hoy.getMonth() + 1)}-${dos(hoy.getDate())}`;
+
+  /** "2026-10-20" → "20/10/2026", como se escribe en España. */
+  const fechaLegible = (iso: string) => iso.split('-').reverse().join('/');
+
+  const mostrarAviso = (texto: string, ok = false) => {
+    if (!aviso) return;
+    aviso.hidden = false;
+    aviso.textContent = texto;
+    aviso.classList.toggle('is-ok', ok);
+  };
+
+  /** Envía el encargo por email desde la web (Web3Forms), sin abrir aplicaciones. */
+  async function enviarEmail(f: HTMLFormElement, datos: FormData, mensaje: string, boton: HTMLButtonElement) {
+    const texto = boton.querySelector<HTMLElement>('[data-envio-texto]');
+    const original = texto?.textContent ?? '';
+    const campo = (k: string) => String(datos.get(k) ?? '').trim();
+    boton.disabled = true;
+    boton.setAttribute('aria-busy', 'true');
+    if (texto) texto.textContent = 'Enviando…';
+    try {
+      if (!f.dataset.clave) throw new Error('sin clave');
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: f.dataset.clave,
+          subject: `Nuevo encargo · ${campo('tipo')} · ${fechaLegible(campo('fecha'))}`,
+          from_name: 'Web Pastelería Bergue',
+          replyto: campo('email'),
+          botcheck: datos.get('botcheck') ? true : '',
+          Encargo: campo('tipo'),
+          Detalle: campo('mensaje'),
+          Personas: campo('personas') || '—',
+          Recogida: `${fechaLegible(campo('fecha'))} en ${campo('tienda')}`,
+          Nombre: campo('nombre'),
+          Teléfono: campo('telefono'),
+          Email: campo('email'),
+          message: mensaje,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) throw new Error(json.message ?? String(res.status));
+
+      const ok = document.querySelector<HTMLElement>('[data-enviado]');
+      const destino = document.querySelector<HTMLElement>('[data-enviado-email]');
+      if (destino) destino.textContent = campo('email');
+      f.reset();
+      if (ok) {
+        ok.hidden = false;
+        ok.focus({ preventScroll: true });
+        ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } catch {
+      mostrarAviso(`No se ha podido enviar ahora mismo. Inténtalo de nuevo${f.dataset.whatsapp ? ', envíalo por WhatsApp' : ''} o llámanos.`);
+    } finally {
+      boton.disabled = false;
+      boton.removeAttribute('aria-busy');
+      if (texto) texto.textContent = original;
+    }
+  }
+
+  function componerMensaje(datos: FormData): string {
+    const campo = (k: string) => String(datos.get(k) ?? '').trim();
+    return [
+      'Hola, quería hacer un encargo en Pastelería Bergue:',
+      `• Encargo: ${campo('tipo')}`,
+      `• Detalle: ${campo('mensaje')}`,
+      campo('personas') && `• Personas: ${campo('personas')}`,
+      `• Recogida: ${fechaLegible(campo('fecha'))} en ${campo('tienda')}`,
+      `• Nombre: ${campo('nombre')}`,
+      `• Teléfono: ${campo('telefono')}`,
+      `• Email: ${campo('email')}`,
+    ].filter(Boolean).join('\n');
+  }
+
+  function validar(f: HTMLFormElement): boolean {
+    let ok = true;
+    f.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea').forEach((el) => {
+      const valido = el.checkValidity();
+      if (el.type !== 'radio') el.setAttribute('aria-invalid', String(!valido));
+      if (!valido) ok = false;
+    });
+    return ok;
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const canal = (e.submitter as HTMLButtonElement | null)?.dataset.canal ?? (form.dataset.whatsapp ? 'whatsapp' : 'email');
+    if (!validar(form)) {
+      const faltan = [...form.querySelectorAll<HTMLElement>('[aria-invalid="true"]')]
+        .map((el) => form.querySelector(`label[for="${el.id}"]`)?.textContent?.trim() || (el as HTMLInputElement).name)
+        .filter(Boolean);
+      mostrarAviso(`Falta por completar: ${faltan.join(', ').toLowerCase()}.`);
+      form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus({ preventScroll: true });
+      return;
+    }
+    if (aviso) aviso.hidden = true;
+    const enviado = document.querySelector<HTMLElement>('[data-enviado]');
+    if (enviado) enviado.hidden = true;
+
+    const datos = new FormData(form);
+    const mensaje = componerMensaje(datos);
+
+    if (canal === 'whatsapp') {
+      window.open(`https://wa.me/${form.dataset.whatsapp}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+      return;
+    }
+    await enviarEmail(form, datos, mensaje, e.submitter as HTMLButtonElement);
+  });
+</script>

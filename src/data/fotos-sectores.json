@@ -1,0 +1,35 @@
+{
+  "pasteleria": [
+    "/img/sectores/pasteleria/1.webp",
+    "/img/sectores/pasteleria/2.webp",
+    "/img/sectores/pasteleria/3.webp",
+    "/img/sectores/pasteleria/4.webp",
+    "/img/sectores/pasteleria/5.webp",
+    "/img/sectores/pasteleria/6.webp",
+    "/img/sectores/pasteleria/7.webp"
+  ],
+  "pan": [
+    "/img/sectores/pan/1.webp",
+    "/img/sectores/pan/2.webp",
+    "/img/sectores/pan/3.webp",
+    "/img/sectores/pan/4.webp",
+    "/img/sectores/pan/5.webp",
+    "/img/sectores/pan/6.webp",
+    "/img/sectores/pan/7.webp",
+    "/img/sectores/pan/8.webp",
+    "/img/sectores/pan/9.webp"
+  ],
+  "salados": [
+    "/img/sectores/salados/1.webp"
+  ],
+  "cafeteria": [
+    "/img/sectores/cafeteria/1.webp",
+    "/img/sectores/cafeteria/2.webp",
+    "/img/sectores/cafeteria/3.webp"
+  ],
+  "gourmet": [
+    "/img/sectores/gourmet/1.webp",
+    "/img/sectores/gourmet/2.webp",
+    "/img/sectores/gourmet/3.webp"
+  ]
+}

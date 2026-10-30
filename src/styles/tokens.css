@@ -1,0 +1,41 @@
+:root {
+  /* Paleta: harina, miga, corteza y caramelo */
+  --harina: #f6eee0;
+  --miga: #ecdfc6;
+  --miga-oscura: #dccaa8;
+  --corteza: #33200f;
+  --tostado: #6b4226;
+  --caramelo: #c46f2a;
+  --caramelo-claro: #e39b55;
+  --frambuesa: #b8434f;
+  --crema-texto: #f6eee0;
+  --linea: color-mix(in srgb, var(--corteza) 22%, transparent);
+
+  /* Tipografía */
+  /* PENDIENTE: Bringbold Nineties (licencia comercial). Cuando el cliente tenga el archivo:
+     copiarlo a /public/fonts/BringboldNineties.woff2, declararlo con @font-face en
+     global.css y ponerlo delante de 'Fraunces Variable' aquí. Sin el archivo se usa Fraunces
+     (antes se pedía igualmente y daba error 404 en cada página). */
+  --font-display: 'Fraunces Variable', 'Times New Roman', serif;
+  --font-body: 'Roboto', system-ui, sans-serif;
+  --peso-display: 600;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.6rem);
+  --text-xl: clamp(1.8rem, 1.3rem + 2vw, 3rem);
+  --text-2xl: clamp(2.6rem, 1.6rem + 4.5vw, 5.5rem);
+  --text-giant: clamp(4.5rem, 1rem + 15vw, 17rem);
+
+  /* Espaciado */
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 3rem);
+  --space-section: clamp(5rem, 3rem + 8vw, 11rem);
+  --max-w: 1440px;
+
+  /* Movimiento */
+  --dur-fast: 180ms;
+  --dur: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+}

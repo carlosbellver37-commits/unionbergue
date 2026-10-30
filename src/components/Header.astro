@@ -1,0 +1,312 @@
+---
+import { nav, tiendas } from '../data/site';
+
+interface Props {
+  clara?: boolean;
+  /** Portada: la barra (marca + enlaces) aparece al pasar la portada. */
+  sinLogo?: boolean;
+}
+const { clara = false, sinLogo = false } = Astro.props;
+
+const barra = [
+  { href: '/#que-hacemos', label: 'Servicios' },
+  { href: '/#conocenos', label: 'Conócenos' },
+  { href: '/#tiendas', label: 'La tienda' },
+  { href: '/encargos', label: 'Encargos' },
+];
+const actual = Astro.url.pathname.replace(/\/$/, '') || '/';
+const esInicio = actual === '/';
+---
+
+<header class:list={['cabecera', { 'cabecera--clara': clara, 'cabecera--portada': sinLogo, 'cabecera--interior': !esInicio }]} data-cabecera>
+  {!esInicio && (
+    <a href="/" class="cabecera__volver" data-volver>
+      <span aria-hidden="true">←</span> Volver
+    </a>
+  )}
+  <a href="/" class="cabecera__marca" aria-label="Pastelería Bergue, inicio">Bergue</a>
+  <nav class="cabecera__nav" aria-label="Secciones">
+    <ul>
+      {barra.map((b) => <li><a href={b.href}>{b.label}</a></li>)}
+    </ul>
+  </nav>
+  <div class="cabecera__acciones">
+    <button class="cabecera__menu" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle>
+      <span class="sr-only">Menú</span>
+      <span class="cabecera__hamb" aria-hidden="true"><span></span><span></span></span>
+    </button>
+  </div>
+</header>
+
+<div class="menu" id="menu" data-menu hidden>
+  <nav class="menu__nav wrap" aria-label="Principal">
+    <ol class="menu__lista">
+      {nav.map((item, i) => (
+        <li style={`--i:${i}`}>
+          <a href={item.href} aria-current={actual === item.href ? 'page' : undefined}>
+            <span class="menu__num">{String(i + 1).padStart(2, '0')}</span>
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ol>
+    <div class="menu__pie">
+      {tiendas.map((t) => (
+        <p><strong>{t.nombre}</strong><br />{t.direccion}<br /><a href={`tel:${t.telefonoHref}`}>{t.telefono}</a></p>
+      ))}
+    </div>
+    <a href="/encargos" class="menu__encargo">Hacer un <em>encargo</em> <span aria-hidden="true">→</span></a>
+  </nav>
+</div>
+
+<style>
+  .cabecera {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding:
+      calc(1rem + env(safe-area-inset-top))
+      max(var(--gutter), env(safe-area-inset-right))
+      1rem
+      max(var(--gutter), env(safe-area-inset-left));
+    color: var(--corteza);
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur), color var(--dur);
+  }
+  .cabecera--clara:not(.is-solida) { color: var(--harina); }
+  .cabecera.is-solida { background: color-mix(in srgb, var(--harina) 88%, transparent); backdrop-filter: blur(10px); }
+  .cabecera.is-abierta { color: var(--harina); background: transparent; backdrop-filter: none; transform: none; }
+
+  /* Volver: en páginas interiores, a la página anterior (o al inicio) */
+  .cabecera__volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    color: #3a241c;
+    font-size: var(--text-sm);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast), color var(--dur-fast);
+  }
+  .cabecera__volver span { transition: transform var(--dur) var(--ease-out); }
+  .cabecera__volver:hover { background: #3a241c; color: #f4eee0; }
+  .cabecera__volver:hover span { transform: translateX(-0.2rem); }
+  .cabecera.is-abierta .cabecera__volver { visibility: hidden; }
+
+  .cabecera__marca {
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: 1.9rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #964b36;
+    text-decoration: none;
+  }
+  .cabecera.is-abierta .cabecera__marca { color: var(--harina); }
+
+  .cabecera__nav { margin-left: auto; margin-right: clamp(1.2rem, 3vw, 2.8rem); }
+  .cabecera__nav ul { list-style: none; padding: 0; display: flex; gap: clamp(1rem, 2.6vw, 2.6rem); }
+  .cabecera__nav a {
+    position: relative;
+    color: #3a241c;
+    text-decoration: none;
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+  }
+  .cabecera__nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.3rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .cabecera__nav a:hover::after,
+  .cabecera__nav a:focus-visible::after { transform: scaleX(1); }
+  .cabecera.is-abierta .cabecera__nav { visibility: hidden; }
+
+  /* Portada: la marca y los enlaces aparecen cuando dejamos atrás la portada */
+  .cabecera--portada .cabecera__marca,
+  .cabecera--portada .cabecera__nav {
+    opacity: 0;
+    translate: 0 -0.6rem;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease-out), translate var(--dur) var(--ease-out);
+  }
+  .cabecera--portada.is-pasada .cabecera__marca,
+  .cabecera--portada.is-pasada .cabecera__nav { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .cabecera--portada:not(.is-pasada) { background: transparent; backdrop-filter: none; }
+
+  @media (max-width: 640px) {
+    .cabecera__marca { display: none; }
+    /* Páginas interiores en móvil: Volver + menú (el menú ya tiene todas las secciones) */
+    .cabecera--interior .cabecera__nav { display: none; }
+    .cabecera--interior .cabecera__acciones { margin-left: auto; }
+    .cabecera__nav { margin-left: 0; margin-right: auto; }
+    .cabecera__nav ul { gap: 0.9rem; }
+    .cabecera__nav a { font-size: 0.82rem; letter-spacing: 0.02em; }
+  }
+  /* Móviles estrechos (320–380 px): las cuatro secciones y el menú caben en una línea */
+  @media (max-width: 380px) {
+    .cabecera { gap: 0.6rem; }
+    .cabecera__nav ul { gap: 0.6rem; }
+    .cabecera__nav a { font-size: 0.76rem; letter-spacing: 0; }
+  }
+  .cabecera__acciones { display: flex; align-items: center; gap: 2rem; }
+  .cabecera__menu {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: none; border: 0; cursor: pointer; padding: 0.5rem 0;
+    font-size: var(--text-xs); letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .cabecera__hamb { display: grid; gap: 6px; width: 30px; padding-block: 0.5rem; }
+  .cabecera__hamb span { height: 1.5px; background: currentColor; transition: transform var(--dur) var(--ease-out); }
+  [aria-expanded='true'] .cabecera__hamb span:first-child { transform: translateY(3.75px) rotate(45deg); }
+  [aria-expanded='true'] .cabecera__hamb span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
+
+  .menu {
+    position: fixed; inset: 0; z-index: 40;
+    background: var(--corteza); color: var(--harina);
+    overflow-y: auto;
+    clip-path: circle(0% at calc(100% - 3rem) 2rem);
+    transition: clip-path 700ms var(--ease-out);
+  }
+  .menu.is-abierto { clip-path: circle(150% at calc(100% - 3rem) 2rem); }
+  .menu__nav {
+    position: relative;
+    min-height: 100%;
+    padding-block: calc(7rem + env(safe-area-inset-top)) calc(3rem + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 3rem;
+  }
+  .menu__lista { grid-column: 1 / -1; }
+  .menu__pie { align-self: end; }
+  /* "Hacer un encargo" escrito en grande, abajo a la derecha */
+  .menu__encargo {
+    align-self: end;
+    justify-self: end;
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: clamp(2.6rem, 1rem + 5vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-align: right;
+    color: var(--harina);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.12em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--dur) var(--ease-out), color var(--dur-fast);
+  }
+  .menu__encargo em { font-style: italic; color: var(--caramelo-claro); }
+  .menu__encargo span { display: inline-block; font-size: 0.6em; transition: transform var(--dur) var(--ease-out); }
+  .menu__encargo:hover,
+  .menu__encargo:focus-visible { text-decoration-color: currentColor; }
+  .menu__encargo:hover span { transform: translateX(0.3em); }
+  @media (max-width: 760px) {
+    .menu__nav { grid-template-columns: 1fr; }
+    .menu__encargo { justify-self: start; text-align: left; }
+  }
+  .menu__lista { list-style: none; padding: 0; columns: 2 18rem; column-gap: 4rem; }
+  .menu__lista li {
+    break-inside: avoid;
+    opacity: 0; transform: translateY(1.5rem);
+    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+    transition-delay: calc(var(--i) * 45ms + 200ms);
+  }
+  .menu.is-abierto .menu__lista li { opacity: 1; transform: none; }
+  .menu__lista a {
+    display: flex; align-items: baseline; gap: 1rem;
+    font-family: var(--font-display); font-size: clamp(2.2rem, 1.5rem + 3vw, 4.4rem);
+    line-height: 1.15; text-decoration: none;
+    transition: color var(--dur-fast), transform var(--dur) var(--ease-out);
+  }
+  .menu__lista a:hover, .menu__lista a[aria-current='page'] { color: var(--caramelo-claro); transform: translateX(0.5rem); font-style: italic; }
+  .menu__num { font-family: var(--font-body); font-size: var(--text-xs); opacity: 0.6; }
+  .menu__pie { display: flex; flex-wrap: wrap; gap: 2rem 4rem; align-items: center; font-size: var(--text-sm); }
+  .menu__pie a:not(.btn-oval) { text-decoration: none; }
+
+</style>
+
+<script>
+  const cabecera = document.querySelector<HTMLElement>('[data-cabecera]');
+  const boton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+
+  if (cabecera && boton && menu) {
+    const DURACION_CIERRE = 700; // = transición de clip-path del menú
+    let esperaCierre = 0;
+    // Ocultar el menú al terminar SU transición (no la de un enlace hijo, que también
+    // burbujea) y solo si sigue cerrado: si se reabre a medias no debe desaparecer.
+    const ocultarSiCerrado = () => {
+      window.clearTimeout(esperaCierre);
+      if (!menu.classList.contains('is-abierto')) menu.hidden = true;
+    };
+    menu.addEventListener('transitionend', (e) => {
+      if (e.target === menu && e.propertyName === 'clip-path') ocultarSiCerrado();
+    });
+
+    const abrir = (abierto: boolean) => {
+      boton.setAttribute('aria-expanded', String(abierto));
+      cabecera.classList.toggle('is-abierta', abierto);
+      document.documentElement.style.overflow = abierto ? 'hidden' : '';
+      window.dispatchEvent(new CustomEvent('bergue:menu', { detail: abierto }));
+      if (abierto) {
+        window.clearTimeout(esperaCierre);
+        menu.hidden = false;
+        requestAnimationFrame(() => menu.classList.add('is-abierto'));
+        menu.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
+      } else {
+        menu.classList.remove('is-abierto');
+        // Por si la transición no llega a ocurrir (pestaña en segundo plano, etc.)
+        window.clearTimeout(esperaCierre);
+        esperaCierre = window.setTimeout(ocultarSiCerrado, DURACION_CIERRE + 100);
+        boton.focus();
+      }
+    };
+
+    boton.addEventListener('click', () => abrir(boton.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && boton.getAttribute('aria-expanded') === 'true') abrir(false);
+    });
+
+    const alScroll = () => {
+      const y = window.scrollY;
+      cabecera.classList.toggle('is-solida', y > 40);
+      // En la portada, la barra aparece al pasar el 60% de la primera pantalla
+      cabecera.classList.toggle('is-pasada', y > window.innerHeight * 0.6);
+    };
+    alScroll();
+    window.addEventListener('scroll', alScroll, { passive: true });
+
+    // Al pulsar un enlace del menú desplegable, cerrarlo
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) abrir(false);
+    });
+  }
+
+  // Volver: si venimos de esta misma web, vuelve atrás (conserva el scroll); si no, al inicio
+  document.querySelector<HTMLAnchorElement>('[data-volver]')?.addEventListener('click', (e) => {
+    try {
+      if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    } catch {
+      // referrer no válido: se sigue el enlace al inicio
+    }
+  });
+</script>

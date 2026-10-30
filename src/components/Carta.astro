@@ -1,0 +1,60 @@
+---
+/** Lista tipo carta de obrador: titular a un lado, productos en columnas al otro. */
+interface Props {
+  id?: string;
+  numero?: string;
+  titulo: string;
+  nota?: string;
+  items: readonly string[];
+  oscuro?: boolean;
+  /** Animación de entrada al hacer scroll (se desactiva dentro de paneles ocultos). */
+  animar?: boolean;
+  nivel?: 'h2' | 'h3' | 'h4';
+}
+const { id, numero, titulo, nota, items, oscuro = false, animar = true, nivel = 'h2' } = Astro.props;
+const Titulo = nivel;
+---
+
+<section class:list={['carta', { 'carta--oscura': oscuro }]} id={id} aria-labelledby={id ? `${id}-t` : undefined}>
+  <div class="carta__grid wrap">
+    <header class="carta__cabeza" data-reveal={animar ? '' : undefined}>
+      {numero && <span class="carta__num">{numero}</span>}
+      <Titulo class="carta__titulo" id={id ? `${id}-t` : undefined}>{titulo}</Titulo>
+      {nota && <p>{nota}</p>}
+      <slot name="cabeza" />
+    </header>
+    <ul class="carta__lista" data-reveal-stagger={animar ? '' : undefined}>
+      {items.map((it) => <li>{it}</li>)}
+    </ul>
+  </div>
+  <slot />
+</section>
+
+<style>
+  .carta { padding-block: clamp(4rem, 8vw, 8rem); border-top: 1px solid var(--linea); }
+  .carta--oscura { background: var(--corteza); color: var(--harina); border-top: 0; --linea: color-mix(in srgb, var(--harina) 20%, transparent); }
+  .carta__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: clamp(2rem, 6vw, 7rem); align-items: start; }
+  .carta__cabeza { position: sticky; top: 7rem; display: grid; gap: 1rem; justify-items: start; }
+  .carta__num { font-size: var(--text-xs); letter-spacing: 0.14em; color: var(--caramelo); }
+  .carta .carta__titulo { font-size: var(--text-2xl); }
+  .carta__cabeza p { color: var(--tostado); max-width: 24rem; }
+  .carta--oscura .carta__cabeza p { color: color-mix(in srgb, var(--harina) 75%, transparent); }
+  .carta__lista { list-style: none; padding: 0; columns: 2 14rem; column-gap: 3rem; }
+  .carta__lista li {
+    break-inside: avoid;
+    display: flex; align-items: baseline; gap: 0.8rem;
+    padding-block: 0.7rem;
+    border-bottom: 1px dashed var(--linea);
+    font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.2;
+    transition: color var(--dur-fast), padding var(--dur) var(--ease-out);
+  }
+  .carta__lista li::before { content: '✶'; font-size: 0.6em; color: var(--caramelo); flex: none; }
+  .carta__lista li:hover { color: var(--caramelo); }
+
+  @media (max-width: 760px) {
+    .carta__grid { grid-template-columns: 1fr; }
+    .carta__cabeza { position: static; }
+    .carta__lista { columns: 2; column-gap: 1.2rem; }
+    .carta__lista li { font-size: var(--text-base); gap: 0.5rem; }
+  }
+</style>

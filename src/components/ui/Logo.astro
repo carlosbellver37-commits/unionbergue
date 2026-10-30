@@ -1,0 +1,23 @@
+---
+/**
+ * Logo Bergue en un solo color (se tiñe con `color`).
+ * Usa el PNG actual como máscara; sustituir por el SVG original cuando llegue.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<span class:list={['logo', className]} role="img" aria-label="Bergue"></span>
+
+<style>
+  .logo {
+    display: inline-block;
+    width: 7.5rem;
+    aspect-ratio: 250 / 114;
+    background-color: currentColor;
+    -webkit-mask: url('/img/logo-bergue.png') center / contain no-repeat;
+    mask: url('/img/logo-bergue.png') center / contain no-repeat;
+  }
+</style>

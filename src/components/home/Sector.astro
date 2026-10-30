@@ -1,0 +1,296 @@
+---
+/**
+ * Contenido de cada sector, para cargarlo bajo el expositor de "Qué hacemos":
+ * introducción con sus claves, fotos enmarcadas que se alternan cada 2 s y,
+ * según el sector, catálogos (visor integrado), línea temporal o carta en lista.
+ * Fotos y catálogos: herramientas/fotos_sectores.py
+ */
+import Carta from '../Carta.astro';
+import LineaTemporal from './LineaTemporal.astro';
+import fotosSectores from '../../data/fotos-sectores.json';
+import catalogosJson from '../../data/catalogos.json';
+import { panes, bolleria, palmeritas, salados, cafeteria, gourmet, mieles, heladeria } from '../../data/carta';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+
+type Bloque = { titulo: string; items: readonly string[]; nota?: string };
+type Texto = { lead: string; cuerpo: string; claves: { titulo: string; texto: string }[] };
+
+const TEXTOS: Record<string, Texto> = {
+  pasteleria: {
+    lead: 'Tartas, pasteles y dulces para el mejor final de cualquier comida, elaborados de forma tradicional con materias primas de primera calidad.',
+    cuerpo: 'Horneamos los bizcochos cada día y montamos las cremas y la nata en nuestro obrador, con fruta fresca y chocolate de cobertura. En la vitrina encontrarás más de treinta tartas, pasteles individuales y pastas de té. Abre los catálogos para verlos todos.',
+    claves: [
+      { titulo: 'Tartas dedicadas', texto: 'Las tartas de encargo pueden ir dedicadas: elige el modelo, el tamaño y el mensaje, y la recoges en la tienda el día que quieras.' },
+      { titulo: 'Pasteles del día', texto: 'Petisús, milhojas, tartaletas y bocaditos, hechos como siempre.' },
+      { titulo: 'Pastas de té', texto: 'Al peso o en bandeja, para acompañar el café o para regalar.' },
+    ],
+  },
+  pan: {
+    lead: 'Un buen pan necesita tiempo, y se lo damos.',
+    cuerpo: 'Seleccionamos la harina y respetamos cada paso: amasado, fermentación lenta y reposo. Así consigue su aroma, una corteza crujiente y una miga que se mantiene tierna hasta el día siguiente. Del mismo horno sale cada mañana la bollería: croissants de mantequilla, napolitanas, ensaimadas y nuestras palmeritas jugositas, en un surtido de sabores.',
+    claves: [
+      { titulo: 'Diecisiete panes', texto: 'De la pistola de siempre a la barra gallega, el pan de pueblo o el de trigo sarraceno.' },
+      { titulo: 'Recién horneado', texto: 'Horneamos varias veces por la mañana para que siempre haya pan del día.' },
+      { titulo: 'Bollería de obrador', texto: 'Hojaldre y mantequilla trabajados en casa, sin atajos.' },
+    ],
+  },
+  salados: {
+    lead: 'Para que cualquier celebración empiece bien.',
+    cuerpo: 'Medias noches, sándwiches, empanadas de hojaldre y quiches hechos en nuestro obrador. Puedes tomarlos en el momento o encargarlos para un cumpleaños, una comida familiar o una reunión de trabajo: dinos cuántos sois y te preparamos la bandeja.',
+    claves: [
+      { titulo: 'Bandejas a medida', texto: 'Combinamos piezas según el número de invitados y el tipo de celebración.' },
+      { titulo: 'Empanadas y quiches', texto: 'De atún, de ternera o de verduras, horneadas el mismo día.' },
+      { titulo: 'Para empresas', texto: 'Preparamos bandejas de minibollería variada para reuniones y desayunos de trabajo.' },
+    ],
+  },
+  temporada: {
+    lead: 'Cada fiesta tiene su dulce, y cada dulce su momento.',
+    cuerpo: 'Seguimos el calendario de Madrid: roscón de Reyes, torrijas en Semana Santa, rosquillas por San Isidro, huesos de santo y buñuelos en Todos los Santos, la corona de la Almudena y turrones en Navidad. Solo los hacemos unas semanas al año, así que conviene encargarlos con tiempo.',
+    claves: [],
+  },
+  cafeteria: {
+    lead: 'El café de siempre, donde siempre.',
+    cuerpo: 'Servimos un café de Colombia seleccionado para la casa. Por la mañana, desayunos con bollería recién hecha, tostadas variadas y bocadillos de nuestro pan; por la tarde, tortitas, gofres y, cuando hace frío, chocolate con churros.',
+    claves: [
+      { titulo: 'Desayunos', texto: 'Café, zumo y bollería del día o tostadas variadas de nuestro pan.' },
+      { titulo: 'Meriendas', texto: 'Tortitas con nata, gofres, bizcochos y chocolate con churros.' },
+      { titulo: 'Bocadillos', texto: 'De tortilla de patatas, de jamón ibérico con aceite de oliva virgen, de bacon y queso y muchos más.' },
+    ],
+  },
+  gourmet: {
+    lead: 'Lo bueno, también para llevar a casa.',
+    cuerpo: 'Elegimos nuestra despensa con el mismo cuidado que el obrador: vinos y cavas, foie, quesos, embutidos ibéricos, conservas, mermeladas artesanas de Extremadura, una variedad de miel 100 % pura, cafés de origen de Colombia, Kenia y Guatemala, y bombones. Si buscas algo que no tenemos, pídenoslo e intentaremos conseguirlo.',
+    claves: [
+      { titulo: 'Bodega', texto: 'Vinos y cavas para acompañar una comida o para regalar.' },
+      { titulo: 'De Extremadura', texto: 'Mermeladas artesanas con fruta fresca de temporada, sin conservantes, y mieles 100 % puras sin mezcla.' },
+      { titulo: 'Bajo pedido', texto: 'Te buscamos el producto que necesites.' },
+    ],
+  },
+  heladeria: {
+    lead: 'Para cuando aprieta el calor.',
+    cuerpo: 'Helado en cucurucho o en copa (Ibiza, Alicante o Fantasía), granizados, batidos, sorbetes, smoothies, yogur helado y frappelatte. Para tomar en la terraza o para llevar.',
+    claves: [
+      { titulo: 'Copas', texto: 'Las clásicas de siempre, montadas al momento.' },
+      { titulo: 'Fresco y ligero', texto: 'Granizados, sorbetes y smoothies de fruta.' },
+      { titulo: 'Para llevar', texto: 'Cucuruchos y vasos para tomar de paseo.' },
+    ],
+  },
+};
+
+const BLOQUES: Record<string, Bloque[]> = {
+  pan: [
+    { titulo: 'Panes', items: panes.map((p) => p.nombre) },
+    { titulo: 'Bollería', items: bolleria },
+    { titulo: 'Palmeritas jugositas', items: palmeritas, nota: 'Nuestro surtido de palmeras, en todos estos sabores.' },
+  ],
+  salados: [{ titulo: 'La carta salada', items: salados }],
+  cafeteria: [
+    { titulo: 'Tostadas', items: cafeteria.tostadas, nota: 'Enteras o medias.' },
+    { titulo: 'Bocadillos', items: cafeteria.bocadillos },
+    { titulo: 'Para acompañar', items: cafeteria.acompanar },
+    { titulo: 'Para beber', items: cafeteria.bebidas },
+  ],
+  // Las mieles, justo después de los productos de Extremadura
+  gourmet: gourmet.flatMap((g) => [
+    { titulo: g.grupo, items: g.items },
+    ...(g.grupo === 'De Extremadura'
+      ? [{
+          titulo: 'Mieles',
+          items: mieles,
+          nota: 'Miel sin mezcla, 100 % pura, de La Virgen de Extremadura. Pregunta por la cata gratis en tienda.',
+        }]
+      : []),
+  ]),
+  heladeria: [{ titulo: 'La carta fresca', items: heladeria, nota: 'Pregunta en tienda por los sabores del día.' }],
+};
+
+const texto = TEXTOS[id];
+const fotos: string[] = (fotosSectores as Record<string, string[]>)[id] ?? [];
+const catalogos = id === 'pasteleria' ? catalogosJson : [];
+const bloques = BLOQUES[id] ?? [];
+/** Miniatura de una página de catálogo (herramientas/miniaturas_catalogos.py). */
+const mini = (src: string) => src.replace(/\/(\d+)\.webp$/, '/mini/$1.webp');
+---
+
+<div class:list={['sector-intro wrap', { 'sector-intro--sin-fotos': fotos.length === 0 }]}>
+  <div class="sector-intro__texto">
+    <p class="sector-intro__lead">{texto.lead}</p>
+    <p class="sector-intro__cuerpo">{texto.cuerpo}</p>
+  </div>
+  {fotos.length > 0 && (
+    <div class="marco">
+      <div class="carrusel" data-carrusel aria-hidden="true">
+        {fotos.map((src, i) => (
+          <img src={src} alt="" loading="lazy" class:list={{ 'is-visible': i === 0 }} />
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
+{texto.claves.length > 0 && (
+  <ul class="claves wrap">
+    {texto.claves.map((c, i) => (
+      <li class="clave">
+        <span class="clave__num">{String(i + 1).padStart(2, '0')}</span>
+        <h4 class="clave__titulo">{c.titulo}</h4>
+        <p class="clave__texto">{c.texto}</p>
+      </li>
+    ))}
+  </ul>
+)}
+
+{id === 'temporada' && <LineaTemporal />}
+
+{catalogos.length > 0 && (
+  <div class="catalogos wrap">
+    <h4 class="catalogos__titulo">Catálogos</h4>
+    <ul class="catalogos__lista">
+      {catalogos.map((c) => (
+        <li>
+          <button type="button" class="catalogo" data-abrir-catalogo={c.id}>
+            <span class="catalogo__hojas">
+              <img class="catalogo__interior" src={mini(c.paginas[1])} alt="" width="440" height="622" loading="lazy" decoding="async" />
+              <img class="catalogo__portada" src={mini(c.paginas[0])} alt="" width="440" height="622" loading="lazy" decoding="async" />
+            </span>
+            <span class="catalogo__nombre">{c.titulo}</span>
+            <span class="catalogo__meta">{c.paginas.length - 1} páginas · Ver catálogo</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+{bloques.map((b, i) => (
+  <Carta
+    titulo={b.titulo}
+    nota={b.nota}
+    items={b.items}
+    numero={bloques.length > 1 ? String(i + 1).padStart(2, '0') : undefined}
+    oscuro={i % 2 === 1}
+    animar={false}
+    nivel="h4"
+  />
+))}
+
+<style>
+  .sector-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+    padding-block: clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  .sector-intro--sin-fotos { grid-template-columns: minmax(0, 50rem); }
+  .sector-intro__texto { display: grid; gap: 1.2rem; }
+  .sector-intro__lead {
+    font-family: 'Cormorant Garamond', 'Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.3rem);
+    line-height: 1.25;
+    color: #3a241c;
+  }
+  .sector-intro__cuerpo { color: #5a4034; line-height: 1.7; max-width: 36rem; }
+
+  /* Marco terracota, como el nombre de la marca */
+  .marco {
+    padding: clamp(0.5rem, 1vw, 0.8rem);
+    border: 2px solid #964b36;
+    outline: 1px solid #964b36;
+    outline-offset: 5px;
+    background: #f4eee0;
+    box-shadow: 0 30px 44px -28px rgb(58 36 28 / 0.55);
+  }
+  .carrusel { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #e9dfcc; }
+  .carrusel img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 900ms ease, transform 2600ms ease-out;
+  }
+  .carrusel img.is-visible { opacity: 1; transform: scale(1); }
+
+  /* Claves del sector */
+  .claves {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3vw, 3rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .clave { display: grid; gap: 0.5rem; align-content: start; padding-top: 1rem; border-top: 1px solid #964b36; }
+  .clave__num { font-size: var(--text-xs); letter-spacing: 0.14em; color: #964b36; }
+  .clave__titulo { font-family: 'Cormorant Garamond', 'Garamond', serif; font-weight: 500; font-size: var(--text-lg); color: #3a241c; }
+  .clave__texto { font-size: var(--text-sm); color: #5a4034; }
+
+  /* Catálogos: portada encima, una hoja interior asoma detrás */
+  .catalogos { padding-bottom: clamp(3rem, 6vw, 5rem); }
+  .catalogos__titulo {
+    font-family: 'Fraunces Variable', serif;
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+    font-size: clamp(2rem, 1rem + 3vw, 3.6rem);
+    letter-spacing: -0.03em;
+    color: #964b36;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .catalogos__lista { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(3rem, 8vw, 8rem); }
+  .catalogo {
+    display: grid;
+    gap: 0.5rem;
+    width: clamp(11rem, 17vw, 14rem);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #3a241c;
+    text-align: left;
+    cursor: pointer;
+  }
+  .catalogo__hojas { position: relative; aspect-ratio: 924 / 1308; margin-bottom: 0.8rem; }
+  .catalogo__hojas img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px;
+    box-shadow: 0 16px 30px -16px rgb(58 36 28 / 0.55);
+    transition: transform 600ms var(--ease-out);
+  }
+  .catalogo__interior { transform: translate(10px, 6px) rotate(4deg); }
+  .catalogo:hover .catalogo__interior,
+  .catalogo:focus-visible .catalogo__interior { transform: translate(42%, -2%) rotate(7deg); }
+  .catalogo:hover .catalogo__portada,
+  .catalogo:focus-visible .catalogo__portada { transform: translate(-6%, -4%) rotate(-4deg); }
+  .catalogo__nombre { font-family: 'Cormorant Garamond', 'Garamond', serif; font-size: var(--text-lg); line-height: 1.1; }
+  .catalogo__meta { font-size: var(--text-xs); letter-spacing: 0.08em; color: #964b36; }
+  .catalogo:hover .catalogo__meta { text-decoration: underline; }
+
+  @media (max-width: 760px) {
+    .sector-intro, .claves { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // Cambia de foto cada 2 s (solo en el carrusel que se está viendo)
+  const INTERVALO = 2000;
+  setInterval(() => {
+    if (document.hidden) return; // pestaña en segundo plano
+    document.querySelectorAll<HTMLElement>('[data-carrusel]').forEach((c) => {
+      if (c.offsetParent === null) return; // sector oculto
+      const imgs = [...c.querySelectorAll('img')];
+      if (imgs.length < 2) return;
+      const i = imgs.findIndex((img) => img.classList.contains('is-visible'));
+      imgs[i]?.classList.remove('is-visible');
+      imgs[(i + 1) % imgs.length].classList.add('is-visible');
+    });
+  }, INTERVALO);
+</script>
