@@ -606,3 +606,41 @@ h4 {
 }
 
 /* Las animaciones se ejecutan siempre, aunque el dispositivo tenga activado "reducir movimiento" */
+
+/* Panel móvil: escena breve y dos accesos en una tarjeta de cristal. */
+@media (max-width: 760px), (max-aspect-ratio: 1/1), (max-height: 500px) {
+  .hero { padding: 0 0.9rem 1.2rem; min-height: 100svh; }
+  .hero__media { height: clamp(9rem, 22svh, 14rem); margin-inline: -0.9rem; mask-image: linear-gradient(#000 65%, transparent); -webkit-mask-image: linear-gradient(#000 65%, transparent); }
+  .hero__video { object-position: 84% 64%; }
+  .vidrio { width: min(100%, 29rem); margin-top: -1.8rem; padding: 1.1rem; border: 1px solid rgb(255 255 255 / 0.85); border-radius: 1.6rem; background: linear-gradient(145deg, rgb(255 255 255 / 0.78), rgb(243 234 219 / 0.7)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 16px 45px -22px rgb(51 32 15 / 0.35), inset 0 1px #fff; }
+  .vidrio__sello { justify-content: flex-start; white-space: normal; gap: 0.45rem; margin-bottom: 1rem; font-size: 0.56rem; letter-spacing: 0.1em; line-height: 1.5; }
+  .grano { width: 0.8rem; }
+  .bienvenida { align-items: flex-start; }
+  .bienvenida > .bienvenida__saludo { font-size: 1.65rem; margin-bottom: 0.15rem; }
+  .bienvenida > .bienvenida__marca { font-size: clamp(4rem, 20vw, 5.3rem); }
+  .lema { margin-top: 0.7rem; font-size: 1.3rem; line-height: 1.15; text-align: left; }
+  .lema br { display: none; }
+  .eleccion { margin-top: 1.35rem; }
+  .eleccion > .etiqueta { text-align: left; font-size: 0.58rem; letter-spacing: 0.15em; margin-bottom: 0.6rem; }
+  .eleccion__lista { display: grid; gap: 0.65rem; border: 0; margin: 0; }
+  .eleccion__lista > li, .eleccion__lista > li:last-child { padding: 0.8rem; border: 1px solid rgb(107 66 38 / 0.13); border-radius: 1rem; background: rgb(255 255 255 / 0.5); }
+  .eleccion__opcion { margin: 0; padding: 0; gap: 0.6rem; min-height: 44px; }
+  .pin { width: 1.05rem; }
+  .eleccion__nombre { font-size: clamp(1.15rem, 5.2vw, 1.45rem); }
+  .eleccion__direccion { margin-top: 0.2rem; font-size: 0.65rem; line-height: 1.4; letter-spacing: 0; }
+  .eleccion__flecha { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; flex: none; border-radius: 50%; background: rgb(107 66 38 / 0.07); font-size: 1.05rem; }
+  .encargo { justify-content: space-between; width: calc(100% - 1.65rem); margin: 0.5rem 0 0 1.65rem; padding: 0.5rem 0; border: 0; border-top: 1px solid rgb(107 66 38 / 0.12); border-radius: 0; min-height: 44px; background: transparent; font-size: 0.67rem; }
+  .nota { display: flex; margin-top: 1rem; gap: 0.2rem; padding-top: 0; border: 0; }
+  .nota .etiqueta { font-size: 0.55rem; }
+  .nota__texto { font-size: 1rem; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .hero__media { height: 9rem; }
+  .vidrio { padding: 1rem; margin-top: -1rem; }
+  .vidrio__sello { margin-bottom: 0.6rem; }
+  .bienvenida > .bienvenida__marca { font-size: 3.8rem; }
+  .bienvenida > .bienvenida__saludo { font-size: 1.35rem; }
+  .lema { font-size: 1.15rem; }
+  .eleccion { margin-top: 1rem; }
+  .nota { display: none; }
+}
