@@ -9,13 +9,19 @@
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.nk-intro{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:#14140f;color:#f3f1ea;font:500 16px/1.5 "Instrument Sans",system-ui,sans-serif;opacity:1;transition:opacity .5s ease}' +
+      '.nk-intro{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;overflow:auto;background:#14140f;color:#f3f1ea;font:500 16px/1.5 "Instrument Sans",system-ui,sans-serif;opacity:1;transition:opacity .5s ease}' +
       '.nk-intro.is-out{opacity:0;pointer-events:none}' +
-      '.nk-intro__box{width:min(520px,100%)}' +
+      '.nk-intro__box{width:min(540px,100%);margin:auto}' +
+      '.nk-steps{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:12px}' +
+      '.nk-steps li{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:16px;background:rgba(243,241,234,.07);border:1px solid rgba(243,241,234,.1)}' +
+      '.nk-steps i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#5f86c4;color:#14140f;font:700 15px/1 "Instrument Sans",system-ui,sans-serif;font-style:normal}' +
+      '.nk-steps b{display:block;color:#f3f1ea;font-weight:600}' +
+      '.nk-steps span{display:block;margin-top:2px;color:rgba(243,241,234,.68);font-size:15px}' +
       '.nk-intro__mark{display:flex;align-items:center;gap:10px;font-weight:600;margin-bottom:48px}' +
       '.nk-intro__mark i{width:11px;height:11px;border-radius:50%;background:#5f86c4;box-shadow:0 0 0 5px rgba(95,134,196,.18)}' +
       '.nk-intro h2{font-weight:600;font-size:clamp(1.8rem,6vw,2.4rem);line-height:1.05;letter-spacing:-.025em;margin:0 0 18px}' +
-      '.nk-intro p{margin:0 0 14px;color:rgba(243,241,234,.7)}' +
+      '.nk-intro p{margin:0 0 10px;color:rgba(243,241,234,.7)}' +
+      '@media (max-width:520px){.nk-intro{padding:18px}.nk-intro__mark{margin-bottom:26px}.nk-steps li{padding:12px 13px}}' +
       '.nk-intro button{font:inherit;font-weight:600;cursor:pointer;color:#14140f;background:#f3f1ea;border:0;border-radius:999px;padding:14px 26px;margin-top:20px}' +
       '.nk-intro button:focus-visible{outline:2px solid #5f86c4;outline-offset:3px}' +
       '@media (prefers-reduced-motion:reduce){.nk-intro{transition:none}}';
@@ -32,8 +38,12 @@
       '<div class="nk-intro__box">' +
       '<div class="nk-intro__mark"><i></i>Nukleo</div>' +
       '<h2 id="nk-intro-title">Esta web ha sido diseñada por Nukleo</h2>' +
-      '<p>Una vez realizado el primer contacto, dispones de un plazo de <strong>' + days + ' días</strong> con esta URL pública bajo nuestro diseño, donde se mantiene la propuesta.</p>' +
-      '<p>Con la tira de la derecha puedes marcar lo que quieras cambiar y nos llega al momento. Pasado el plazo, la web y la propuesta se cancelan, con posibilidad de renegociación.</p>' +
+      '<p>Tienes <strong>' + days + ' días</strong> con esta URL para revisar la propuesta. Abajo a la izquierda verás cuánto tiempo queda. Después se cancela, con posibilidad de renegociar.</p>' +
+      '<ol class="nk-steps">' +
+      '<li><i>1</i><div><b>Elige una herramienta</b><span>En la tira de la derecha: comentar, marcar una zona o cambiar un texto.</span></div></li>' +
+      '<li><i>2</i><div><b>Toca la web y escribe</b><span>Donde quieras el cambio. Nos llega al momento.</span></div></li>' +
+      '<li><i>3</i><div><b>Revisa tus cambios</b><span>En «Mis cambios» puedes editarlos, moverlos o borrarlos cuando quieras.</span></div></li>' +
+      '</ol>' +
       '<button type="button">Ver la web</button>' +
       '</div>';
     var button = el.querySelector('button');
@@ -64,6 +74,7 @@
   function start(status) {
     window.__nkStatus = status;
     injectStyles();
+    window.__nkShowIntro = function () { if (!document.querySelector('.nk-intro')) buildIntro(status.days); };
     if (status.role === 'client' && !seenIntro()) buildIntro(status.days);
     root.classList.remove('nk-pending');
     loadScripts(status);

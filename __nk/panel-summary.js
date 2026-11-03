@@ -53,6 +53,7 @@
     '.rows i{width:9px;height:9px;border-radius:50%;flex:none}.rows b{margin-left:auto;font-weight:600}.muted{color:rgba(243,241,234,.55)}' +
     '.acts{display:flex;gap:8px}.acts button,.acts a{flex:1;text-align:center;padding:9px 12px;border-radius:999px;background:rgba(243,241,234,.14);font-weight:600}' +
     '.acts button:hover,.acts a:hover{background:rgba(243,241,234,.26)}.acts .main{background:#f3f1ea;color:#14140f}.acts .main:hover{background:#fff}' +
+    '.how{justify-self:center;color:rgba(243,241,234,.7);text-decoration:underline;text-underline-offset:3px;padding:2px 6px}.how:hover{color:#fff}' +
     '@media (prefers-reduced-motion:reduce){*{transition:none!important}}';
 
   var wrap = h('div', { class: 'w' });
@@ -120,7 +121,8 @@
       h('button', { type: 'button', class: 'main', onclick: function () { panel.openList(); } }, panel.isAdmin ? 'Ver avisos' : 'Ver mis cambios'),
       h('a', { href: '/__nk/logout', 'aria-label': panel.isAdmin ? 'Salir del modo equipo' : 'Salir' }, 'Salir')
     ]);
-    [block, summary, actions].forEach(function (el) { card.appendChild(el); });
+    var how = panel.isAdmin || !window.__nkShowIntro ? null : h('button', { type: 'button', class: 'how', onclick: function () { toggle(); window.__nkShowIntro(); } }, '¿Cómo funciona?');
+    [block, summary, actions, how].forEach(function (el) { if (el) card.appendChild(el); });
   }
 
   function render() {
