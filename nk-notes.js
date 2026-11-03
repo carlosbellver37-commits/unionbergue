@@ -41,24 +41,27 @@ async function readBody(request) {
 }
 
 // Solo se guardan campos conocidos y acotados; nada del cliente se usa tal cual.
+function cleanAnchor(anchor = {}) {
+  return {
+    sel: text(anchor.sel, 300),
+    fx: num(anchor.fx, -1, 2),
+    fy: num(anchor.fy, -1, 2),
+    fw: num(anchor.fw, 0, 3),
+    fh: num(anchor.fh, 0, 3),
+    dx: num(anchor.dx, 0, 1),
+    dy: num(anchor.dy, 0, 100000),
+  };
+}
+
 function cleanNote(input, role) {
   if (!input || !KINDS.has(input.kind) || !TYPES.has(input.type)) return null;
-  const anchor = input.anchor || {};
   const note = {
     kind: input.kind,
     type: input.type,
     message: text(input.message, 1000),
     before: text(input.before, 1000),
     after: text(input.after, 1000),
-    anchor: {
-      sel: text(anchor.sel, 300),
-      fx: num(anchor.fx, -1, 2),
-      fy: num(anchor.fy, -1, 2),
-      fw: num(anchor.fw, 0, 3),
-      fh: num(anchor.fh, 0, 3),
-      dx: num(anchor.dx, 0, 1),
-      dy: num(anchor.dy, 0, 100000),
-    },
+    anchor: cleanAnchor(input.anchor),
     viewport: { w: num(input.viewport && input.viewport.w, 0, 10000), h: num(input.viewport && input.viewport.h, 0, 10000) },
     page: text(input.page, 200),
     author: role === 'admin' ? 'equipo' : 'cliente',
@@ -88,21 +91,55 @@ async function createNote(request, session, project) {
   return json({ note: saved }, 201);
 }
 
-async function updateNote(request, session, project) {
-  if (session.role !== 'admin') return json({ error: 'solo el equipo' }, 403);
-  const body = await readBody(request);
-  if (!body || !ID_PATTERN.test(body.id || '') || !STATUSES.has(body.status)) return json({ error: 'petición no válida' }, 400);
-  const pathname = pathOf(project, body.id);
-  const note = await readNote(pathname);
-  if (!note) return json({ error: 'no existe' }, 404);
-  const updated = { ...note, status: body.status };
-  await put(pathname, JSON.stringify(updated), {
+const ownerOf = (role) => (role === 'admin' ? 'equipo' : 'cliente');
+
+async function saveNote(pathname, note) {
+  await put(pathname, JSON.stringify(note), {
     access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
   });
-  return json({ note: updated });
+  return note;
+}
+
+// El equipo cambia el estado; el autor edita su propio aviso mientras no esté hecho.
+async function updateNote(request, session, project) {
+  const body = await readBody(request);
+  if (!body || !ID_PATTERN.test(body.id || '')) return json({ error: 'petición no válida' }, 400);
+  const pathname = pathOf(project, body.id);
+  const note = await readNote(pathname);
+  if (!note) return json({ error: 'El aviso ya no existe' }, 404);
+
+  if (body.status !== undefined) {
+    if (session.role !== 'admin' || !STATUSES.has(body.status)) return json({ error: 'solo el equipo' }, 403);
+    return json({ note: await saveNote(pathname, { ...note, status: body.status }) });
+  }
+
+  if (note.author !== ownerOf(session.role)) return json({ error: 'No puedes editar este aviso' }, 403);
+  if (note.status === 'done') return json({ error: 'Este aviso ya está hecho' }, 409);
+  const patch = {};
+  if (typeof body.message === 'string' && note.kind !== 'text') patch.message = text(body.message, 1000);
+  if (typeof body.after === 'string' && note.kind === 'text') patch.after = text(body.after, 1000);
+  if (body.type !== undefined && TYPES.has(body.type) && note.kind !== 'text') patch.type = body.type;
+  if (body.anchor && note.kind !== 'text') patch.anchor = cleanAnchor(body.anchor);
+  if (!Object.keys(patch).length) return json({ error: 'nada que cambiar' }, 400);
+  return json({ note: await saveNote(pathname, { ...note, ...patch, editedAt: Date.now() }) });
+}
+
+// El equipo confirma que ha recibido los avisos; el cliente lo ve como "Recibido".
+async function ackNotes(request, session, project) {
+  if (session.role !== 'admin') return json({ error: 'solo el equipo' }, 403);
+  const body = await readBody(request);
+  const ids = Array.isArray(body && body.ids) ? body.ids.filter((id) => ID_PATTERN.test(id)).slice(0, MAX_NOTES) : [];
+  const now = Date.now();
+  const updated = await Promise.all(ids.map(async (id) => {
+    const pathname = pathOf(project, id);
+    const note = await readNote(pathname).catch(() => null);
+    if (!note || note.ackAt) return null;
+    return saveNote(pathname, { ...note, ackAt: now });
+  }));
+  return json({ acked: updated.filter(Boolean).length });
 }
 
 async function deleteNote(request, session, project) {
@@ -111,7 +148,7 @@ async function deleteNote(request, session, project) {
   const pathname = pathOf(project, body.id);
   const note = await readNote(pathname);
   if (!note) return json({ ok: true });
-  const mine = note.author === (session.role === 'admin' ? 'equipo' : 'cliente');
+  const mine = note.author === ownerOf(session.role);
   if (session.role !== 'admin' && !mine) return json({ error: 'no permitido' }, 403);
   await del(pathname);
   return json({ ok: true });
@@ -124,6 +161,7 @@ export async function handleNotes(request, url, session, project) {
     if (url.pathname === '/__nk/notes' && request.method === 'GET') return json({ notes: await listNotes(project) });
     if (url.pathname === '/__nk/notes' && request.method === 'POST') return await createNote(request, session, project);
     if (url.pathname === '/__nk/notes/update' && request.method === 'POST') return await updateNote(request, session, project);
+    if (url.pathname === '/__nk/notes/ack' && request.method === 'POST') return await ackNotes(request, session, project);
     if (url.pathname === '/__nk/notes/delete' && request.method === 'POST') return await deleteNote(request, session, project);
   } catch (error) {
     console.error('[nukleo-preview] notas:', error.message);

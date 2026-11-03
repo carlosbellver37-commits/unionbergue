@@ -2,15 +2,16 @@
 // Variables de entorno (Vercel): NK_SECRET, NK_CLIENT_PASSWORD, NK_ADMIN_PASSWORD,
 // NK_PROJECT y BLOB_READ_WRITE_TOKEN (la crea Vercel al conectar el Blob store).
 import { next } from '@vercel/functions';
-import { get, put } from '@vercel/blob';
+import { get, put, del } from '@vercel/blob';
 import { gatePage, expiredPage, themeFor } from './nk-pages.js';
 import { handleNotes } from './nk-notes.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
-const ADMIN_DAYS = 30;
-const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js']);
+const SESSION_DAYS = 30;
+const START_CACHE_MS = 20 * 1000;
+const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js']);
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -77,6 +78,43 @@ async function readStart() {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
+let startCache = { value: undefined, at: 0 };
+
+async function readStartCached() {
+  if (startCache.value !== undefined && Date.now() - startCache.at < START_CACHE_MS) return startCache.value;
+  const value = await readStart();
+  startCache = { value, at: Date.now() };
+  return value;
+}
+
+// La fecha del servidor manda; si no se puede leer, vale la que lleva la cookie firmada.
+async function deadlineFor(session) {
+  let start = null;
+  try {
+    start = await readStartCached();
+  } catch (error) {
+    console.error('[nukleo-preview] plazo:', error.message);
+  }
+  return (start || session.start) + TRIAL_DAYS * DAY_MS;
+}
+
+// Solo el equipo: reinicia el plazo (borra la fecha) o fija una nueva.
+async function timer(request, session) {
+  if (session.role !== 'admin') return json({ error: 'solo el equipo' }, 403);
+  const body = await request.json().catch(() => null);
+  startCache = { value: undefined, at: 0 };
+  if (body && body.action === 'reset') {
+    await del(startPath()).catch(() => null);
+    return json({ ok: true, start: null });
+  }
+  const start = Number(body && body.start);
+  if (body && body.action === 'set' && Number.isFinite(start) && start > 0) {
+    await put(startPath(), JSON.stringify({ start }), { access: 'private', contentType: 'application/json', addRandomSuffix: false, allowOverwrite: true });
+    return json({ ok: true, start });
+  }
+  return json({ error: 'petición no válida' }, 400);
+}
+
 // Crea la fecha solo si no existe: si dos clientes entran a la vez gana el primero.
 async function ensureStart() {
   const existing = await readStart();
@@ -108,7 +146,7 @@ async function login(request) {
   if (!password) return failure('Introduce la contraseña.');
 
   if (await safeEqual(password, env('NK_ADMIN_PASSWORD'))) {
-    const expires = Date.now() + ADMIN_DAYS * DAY_MS;
+    const expires = Date.now() + SESSION_DAYS * DAY_MS;
     return new Response(null, {
       status: 303,
       headers: { location: '/', 'set-cookie': sessionCookie(await signSession('admin', 0, expires), expires) },
@@ -124,9 +162,9 @@ async function login(request) {
     console.error('[nukleo-preview]', error.message);
     return html(gatePage('No se pudo comprobar el plazo. Inténtalo de nuevo en unos minutos.', env('NK_PROJECT')), 503);
   }
-  const expires = start + TRIAL_DAYS * DAY_MS;
-  if (expires <= Date.now()) return html(expiredPage(env('NK_PROJECT')), 403);
+  if (start + TRIAL_DAYS * DAY_MS <= Date.now()) return html(expiredPage(env('NK_PROJECT')), 403);
 
+  const expires = Date.now() + SESSION_DAYS * DAY_MS;
   return new Response(null, {
     status: 303,
     headers: { location: '/', 'set-cookie': sessionCookie(await signSession('client', start, expires), expires) },
@@ -144,7 +182,7 @@ async function status(session) {
     }
     return json({ role: 'admin', days: TRIAL_DAYS, accent, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
   }
-  return json({ role: 'client', days: TRIAL_DAYS, accent, expires: session.expires });
+  return json({ role: 'client', days: TRIAL_DAYS, accent, expires: await deadlineFor(session) });
 }
 
 export default async function middleware(request) {
@@ -159,7 +197,13 @@ export default async function middleware(request) {
     return html(gatePage('', env('NK_PROJECT')), 401);
   }
 
+  if (session.role === 'client' && (await deadlineFor(session)) <= Date.now()) {
+    if (url.pathname.startsWith('/__nk/')) return json({ error: 'expired' }, 403);
+    return html(expiredPage(env('NK_PROJECT')), 403, { 'set-cookie': sessionCookie('', Date.now()) });
+  }
+
   if (url.pathname === '/__nk/status') return status(session);
+  if (url.pathname === '/__nk/timer' && request.method === 'POST') return timer(request, session);
   const notes = await handleNotes(request, url, session, env('NK_PROJECT'));
   if (notes) return notes;
   if (url.pathname === '/__nk/logout') {
