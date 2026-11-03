@@ -1,0 +1,8 @@
+{
+  "name": "nukleo-preview-gate",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/functions": "^2.0.0"
+  }
+}
