@@ -2,7 +2,8 @@
 (function () {
   'use strict';
   var SEEN_KEY = 'nk-intro-seen';
-  var SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js'];
+  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js'];
+  var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js'];
   var root = document.documentElement;
 
   function injectStyles() {
@@ -49,10 +50,12 @@
     try { return sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) { return false; }
   }
 
-  function loadScripts() {
-    SCRIPTS.forEach(function (src) {
+  function loadScripts(status) {
+    var list = status.role === 'admin' ? TEAM_SCRIPTS : CLIENT_SCRIPTS;
+    var version = encodeURIComponent(status.v || Date.now());
+    list.forEach(function (src) {
       var script = document.createElement('script');
-      script.src = src;
+      script.src = src + '?v=' + version;
       script.async = false; // se ejecutan en orden: primero la tira, luego el resumen
       document.head.appendChild(script);
     });
@@ -63,7 +66,7 @@
     injectStyles();
     if (status.role === 'client' && !seenIntro()) buildIntro(status.days);
     root.classList.remove('nk-pending');
-    loadScripts();
+    loadScripts(status);
   }
 
   fetch('/__nk/status', { credentials: 'same-origin', cache: 'no-store' })

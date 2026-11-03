@@ -1,5 +1,6 @@
 // Notas del cliente: se guardan una a una en el Blob privado del proyecto.
 import { get, list, put, del } from '@vercel/blob';
+import { notifyTeam } from './nk-notify.js';
 
 const MAX_BODY = 8 * 1024;
 const MAX_NOTES = 300;
@@ -88,6 +89,7 @@ async function createNote(request, session, project) {
     addRandomSuffix: false,
     allowOverwrite: false,
   });
+  if (session.role === 'client') notifyTeam(saved, request, project, 'note');
   return json({ note: saved }, 201);
 }
 
@@ -127,6 +129,28 @@ async function updateNote(request, session, project) {
   return json({ note: await saveNote(pathname, { ...note, ...patch, editedAt: Date.now() }) });
 }
 
+const MAX_REPLIES = 40;
+
+// Conversación dentro del aviso: responde el equipo o el cliente.
+async function replyNote(request, session, project) {
+  const body = await readBody(request);
+  const message = text(body && body.message, 1000).trim();
+  if (!body || !ID_PATTERN.test(body.id || '') || !message) return json({ error: 'petición no válida' }, 400);
+  const pathname = pathOf(project, body.id);
+  const note = await readNote(pathname);
+  if (!note) return json({ error: 'El aviso ya no existe' }, 404);
+  const replies = note.replies || [];
+  if (replies.length >= MAX_REPLIES) return json({ error: 'Demasiadas respuestas en este aviso' }, 409);
+  const entry = { by: ownerOf(session.role), message, at: Date.now() };
+  const next = { ...note, replies: [...replies, entry], repliedAt: entry.at };
+  // Responde el equipo: queda recibido. Responde el cliente: vuelve a ser "nuevo" para el equipo.
+  if (session.role === 'admin') next.ackAt = next.ackAt || entry.at;
+  else delete next.ackAt;
+  const saved = await saveNote(pathname, next);
+  if (session.role === 'client') notifyTeam(saved, request, project, 'reply');
+  return json({ note: saved });
+}
+
 // El equipo confirma que ha recibido los avisos; el cliente lo ve como "Recibido".
 async function ackNotes(request, session, project) {
   if (session.role !== 'admin') return json({ error: 'solo el equipo' }, 403);
@@ -161,6 +185,7 @@ export async function handleNotes(request, url, session, project) {
     if (url.pathname === '/__nk/notes' && request.method === 'GET') return json({ notes: await listNotes(project) });
     if (url.pathname === '/__nk/notes' && request.method === 'POST') return await createNote(request, session, project);
     if (url.pathname === '/__nk/notes/update' && request.method === 'POST') return await updateNote(request, session, project);
+    if (url.pathname === '/__nk/notes/reply' && request.method === 'POST') return await replyNote(request, session, project);
     if (url.pathname === '/__nk/notes/ack' && request.method === 'POST') return await ackNotes(request, session, project);
     if (url.pathname === '/__nk/notes/delete' && request.method === 'POST') return await deleteNote(request, session, project);
   } catch (error) {

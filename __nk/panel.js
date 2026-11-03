@@ -30,7 +30,8 @@
     list: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>'
   };
 
-  var state = { notes: [], tool: null, drawer: false, bubble: null, signature: '' };
+  var state = { notes: [], tool: null, drawer: false, bubble: null, signature: '', hidePins: false };
+  var inboxRenderer = null;
   var listeners = [];
 
   /* ---------- utilidades ---------- */
@@ -223,6 +224,8 @@
     '.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.actions button{padding:9px 15px;border-radius:999px;background:rgba(20,20,15,.07)}' +
     '.actions .go{background:' + ACCENT + ';color:#fff;font-weight:600}.actions .go[disabled]{opacity:.5;cursor:default}' +
     '.actions .danger{color:#b3321f}.actions .danger.sure{background:#b3321f;color:#fff;font-weight:600}' +
+    '.thread{display:grid;gap:6px;max-height:170px;overflow:auto}.reply{display:grid;gap:1px;padding:7px 10px;border-radius:12px;background:rgba(20,20,15,.06);font-size:13px;overflow-wrap:anywhere}' +
+    '.reply.team{background:color-mix(in srgb,' + ACCENT + ' 14%,#fff)}.reply b{font-size:11px;letter-spacing:.03em}.reply small{color:#8a8982;font-size:11px}' +
     '.err{color:#b3321f;font-size:13px;min-height:1em;margin:0}' +
     '.toast{position:fixed;left:50%;bottom:72px;transform:translate(-50%,12px);padding:10px 18px;border-radius:999px;background:#14140f;color:#f3f1ea;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:calc(100vw - 24px)}' +
     '.toast.on{opacity:1;transform:translate(-50%,0)}' +
@@ -289,6 +292,17 @@
     var fresh = IS_ADMIN ? newCount() : 0;
     var count = IS_ADMIN ? (fresh || open) : open;
     strip.textContent = '';
+    if (IS_ADMIN) {
+      strip.appendChild(h('button', {
+        class: 'tool', type: 'button', 'aria-pressed': String(state.drawer), 'aria-label': 'Bandeja de avisos',
+        onclick: function () { setDrawer(!state.drawer); }
+      }, [icon('list'), h('span', { class: 'lbl' }, 'Bandeja'), count ? h('span', { class: 'badge' + (fresh ? ' is-new' : '') }, String(count)) : null]));
+      strip.appendChild(h('button', {
+        class: 'tool', type: 'button', 'aria-pressed': String(state.hidePins), 'aria-label': state.hidePins ? 'Mostrar marcas' : 'Ocultar marcas',
+        onclick: function () { state.hidePins = !state.hidePins; layer.style.display = state.hidePins ? 'none' : ''; closePopups(); renderStrip(); }
+      }, [icon('pin'), h('span', { class: 'lbl' }, state.hidePins ? 'Mostrar marcas' : 'Ocultar marcas')]));
+      return;
+    }
     [['pin', 'Comentar'], ['zone', 'Marcar zona'], ['text', 'Cambiar texto']].forEach(function (def) {
       strip.appendChild(h('button', {
         class: 'tool', type: 'button', 'aria-pressed': String(state.tool === def[0]), 'aria-label': def[1],
@@ -465,6 +479,30 @@
     return h('span', { class: 'chip' + (/✓/.test(label) ? ' ok' : label === 'Nuevo' ? ' new' : '') }, label);
   }
 
+  function replyBox(note, onSent) {
+    var area = h('textarea', { maxlength: '1000', 'aria-label': 'Escribe una respuesta', placeholder: 'Escribe una respuesta…' });
+    area.style.minHeight = '60px';
+    var error = h('p', { class: 'err', role: 'alert' });
+    var send = h('button', { type: 'button', class: 'go' }, 'Enviar respuesta');
+    send.addEventListener('click', function () {
+      var value = area.value.trim();
+      if (!value) { error.textContent = 'Escribe algo antes de enviar.'; return; }
+      send.disabled = true; error.textContent = '';
+      api('/__nk/notes/reply', 'POST', { id: note.id, message: value }).then(function (data) {
+        replaceNote(data.note); say('Respuesta enviada ✓'); if (onSent) onSent(data.note);
+      }).catch(function (err) { send.disabled = false; error.textContent = err.message; });
+    });
+    return h('div', { class: 'replybox' }, [area, error, h('div', { class: 'actions' }, [send])]);
+  }
+
+  function threadOf(note) {
+    var replies = note.replies || [];
+    if (!replies.length) return null;
+    return h('div', { class: 'thread' }, replies.map(function (r) {
+      return h('div', { class: 'reply' + (r.by === 'equipo' ? ' team' : '') }, [h('b', {}, r.by === 'equipo' ? 'NUKLEO' : 'CLIENTE'), h('span', {}, r.message), h('small', {}, ago(r.at))]);
+    }));
+  }
+
   function placeCard(card, vx, vy) {
     var width = Math.min(330, window.innerWidth - 24);
     card.style.left = Math.max(12, Math.min(vx + 18, window.innerWidth - width - 70)) + 'px';
@@ -512,8 +550,10 @@
         h('span', { class: 'chip' }, TYPES[note.type].label), statusChip(note),
         h('span', { class: 'when' }, ago(note.createdAt))
       ]),
-      body, tip, actions
+      body, threadOf(note), tip, actions
     ]);
+    var replyToggle = h('button', { type: 'button', onclick: function () { replyToggle.replaceWith(replyBox(note, function (fresh) { showBubble(fresh, index, pos); })); } }, 'Responder');
+    actions.insertBefore(replyToggle, actions.lastChild);
     placeCard(card, pos.x - window.scrollX, pos.y - window.scrollY);
     popup.appendChild(card);
     state.bubble = note.id;
@@ -644,6 +684,7 @@
   /* ---------- lista de avisos ---------- */
   function renderDrawer() {
     drawer.classList.toggle('on', state.drawer);
+    if (IS_ADMIN && inboxRenderer) { if (state.drawer) inboxRenderer(drawer); else drawer.textContent = ''; return; }
     drawer.textContent = '';
     if (!state.drawer) return;
     var open = state.notes.filter(function (n) { return n.status !== 'done'; }).length;
@@ -654,6 +695,7 @@
         h('span', { class: 'row' }, [
           h('span', { class: 'n', style: 'background:' + colorOf(note) }, String(index + 1)),
           h('span', { class: 'chip' }, TYPES[note.type].label), statusChip(note),
+          (note.replies && note.replies.length) ? h('span', { class: 'chip ok' }, '💬 ' + note.replies.length) : null,
           h('span', { class: 'when' }, ago(note.createdAt))
         ]),
         noteBody(note)
@@ -666,7 +708,7 @@
 
   /* ---------- sincronización ---------- */
   function refresh(force) {
-    var signature = state.notes.map(function (n) { return [n.id, n.status, n.ackAt || 0, n.editedAt || 0, n.message, n.after, n.type].join(); }).join('|');
+    var signature = state.notes.map(function (n) { return [n.id, n.status, n.ackAt || 0, n.editedAt || 0, (n.replies || []).length, n.message, n.after, n.type].join(); }).join('|');
     if (!force && signature === state.signature) return;
     state.signature = signature;
     renderPins(); renderStrip(); renderDrawer();
@@ -694,7 +736,14 @@
     colors: { cambiar: TYPES.cambiar.color, quitar: TYPES.quitar.color, gusta: TYPES.gusta.color, pregunta: TYPES.pregunta.color, texto: TYPES.texto.color },
     getNotes: function () { return state.notes; },
     subscribe: function (fn) { listeners.push(fn); fn(state.notes); },
-    openList: function () { setDrawer(true); }
+    openList: function () { setDrawer(true); },
+    setInbox: function (fn) { inboxRenderer = fn; renderDrawer(); },
+    core: {
+      h: h, api: api, ago: ago, say: say, shadow: shadow, TYPES: TYPES, colorOf: colorOf,
+      noteBody: noteBody, statusChip: statusChip, threadOf: threadOf, replyBox: replyBox,
+      goTo: goTo, removeNote: removeNote, updateNote: updateNote, setDrawer: setDrawer,
+      notes: function () { return state.notes; }, close: function () { setDrawer(false); }, reload: load
+    }
   };
 
   document.documentElement.appendChild(host);
