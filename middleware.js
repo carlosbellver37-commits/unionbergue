@@ -10,6 +10,7 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const ADMIN_DAYS = 30;
 const PUBLIC_PATHS = new Set(['/__nk/preview.js']);
+const PUBLIC_PREFIX = '/__nk/img/';
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -102,7 +103,7 @@ async function login(request) {
   const password = String((form && form.get('password')) || '');
   const failure = async (message) => {
     await new Promise((resolve) => setTimeout(resolve, 900));
-    return html(gatePage(message), 401);
+    return html(gatePage(message, env('NK_PROJECT')), 401);
   };
   if (!password) return failure('Introduce la contraseña.');
 
@@ -121,10 +122,10 @@ async function login(request) {
     start = await ensureStart();
   } catch (error) {
     console.error('[nukleo-preview]', error.message);
-    return html(gatePage('No se pudo comprobar el plazo. Inténtalo de nuevo en unos minutos.'), 503);
+    return html(gatePage('No se pudo comprobar el plazo. Inténtalo de nuevo en unos minutos.', env('NK_PROJECT')), 503);
   }
   const expires = start + TRIAL_DAYS * DAY_MS;
-  if (expires <= Date.now()) return html(expiredPage(), 403);
+  if (expires <= Date.now()) return html(expiredPage(env('NK_PROJECT')), 403);
 
   return new Response(null, {
     status: 303,
@@ -147,14 +148,14 @@ async function status(session) {
 
 export default async function middleware(request) {
   const url = new URL(request.url);
-  if (PUBLIC_PATHS.has(url.pathname)) return next();
+  if (PUBLIC_PATHS.has(url.pathname) || url.pathname.startsWith(PUBLIC_PREFIX)) return next();
 
   if (url.pathname === '/__nk/login' && request.method === 'POST') return login(request);
 
   const session = await readSession(request);
   if (!session) {
     if (url.pathname.startsWith('/__nk/')) return json({ error: 'unauthorized' }, 401);
-    return html(gatePage(''), 401);
+    return html(gatePage('', env('NK_PROJECT')), 401);
   }
 
   if (url.pathname === '/__nk/status') return status(session);
