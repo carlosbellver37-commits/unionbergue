@@ -1,6 +1,8 @@
-// Aviso al equipo por WhatsApp cuando el cliente crea un aviso o responde.
+// Aviso al equipo al móvil cuando el cliente crea un aviso o responde.
 // No hace nada hasta que se configuran las variables del proveedor en Vercel:
-//   NK_WA_PROVIDER = callmebot | meta
+//   NK_WA_PROVIDER = telegram | ntfy | callmebot | meta
+//   telegram:  NK_TG_TOKEN (de @BotFather), NK_TG_CHAT_IDS = "123456,789012"
+//   ntfy:      NK_NTFY_TOPIC (nombre secreto largo), opcional NK_NTFY_SERVER (por defecto https://ntfy.sh)
 //   callmebot: NK_WA_TARGETS = "34600111222:APIKEY,34600333444:APIKEY"
 //   meta:      NK_WA_TOKEN, NK_WA_PHONE_ID, NK_WA_TO = "34600111222,34600333444"
 //              y, si hace falta fuera de la ventana de 24 h, NK_WA_TEMPLATE (plantilla con 1 variable)
@@ -31,6 +33,29 @@ async function sendCallMeBot(message) {
   }));
 }
 
+async function sendTelegram(message) {
+  const token = env('NK_TG_TOKEN');
+  await Promise.all(list(env('NK_TG_CHAT_IDS')).map(async (chat) => {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: chat, text: message, disable_web_page_preview: true }),
+    });
+    if (!res.ok) throw new Error(`Telegram ${res.status}`);
+  }));
+}
+
+async function sendNtfy(message) {
+  const server = env('NK_NTFY_SERVER') || 'https://ntfy.sh';
+  const [title, ...rest] = message.split('\n');
+  const res = await fetch(`${server}/${encodeURIComponent(env('NK_NTFY_TOPIC'))}`, {
+    method: 'POST',
+    headers: { title: `=?UTF-8?B?${Buffer.from(title).toString('base64')}?=`, priority: 'high', tags: 'bell' },
+    body: rest.join('\n'),
+  });
+  if (!res.ok) throw new Error(`ntfy ${res.status}`);
+}
+
 async function sendMeta(message) {
   const template = env('NK_WA_TEMPLATE');
   await Promise.all(list(env('NK_WA_TO')).map(async (to) => {
@@ -51,7 +76,8 @@ export function notifyTeam(note, request, project, event = 'note') {
   const provider = env('NK_WA_PROVIDER');
   if (!provider) return;
   const message = describe(note, new URL(request.url).origin, project, event);
-  const job = (provider === 'meta' ? sendMeta(message) : provider === 'callmebot' ? sendCallMeBot(message) : Promise.resolve())
-    .catch((error) => console.error('[nukleo-preview] WhatsApp:', error.message));
+  const senders = { telegram: sendTelegram, ntfy: sendNtfy, callmebot: sendCallMeBot, meta: sendMeta };
+  const job = (senders[provider] ? senders[provider](message) : Promise.resolve())
+    .catch((error) => console.error('[nukleo-preview] aviso:', error.message));
   waitUntil(job);
 }
