@@ -3,6 +3,7 @@
 const THEMES = {
   'web-union-bergue': {
     label: 'Unión Bergue',
+    sub: 'Family',
     page: '#e9e6d9',
     panel: '#efeee4',
     ink: '#33200f',
@@ -13,6 +14,7 @@ const THEMES = {
   },
   'bergue-montecarmelo': {
     label: 'Bergue Montecarmelo',
+    sub: 'Montecarmelo',
     page: '#e5e2db',
     panel: '#efede8',
     ink: '#1c1513',
@@ -23,6 +25,7 @@ const THEMES = {
   },
 };
 const FALLBACK = THEMES['web-union-bergue'];
+export const themeFor = (project) => THEMES[project] || FALLBACK;
 
 const escapeHtml = (text) =>
   String(text).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -44,9 +47,10 @@ body::before{content:"";position:fixed;inset:0 auto 0 0;width:46%;background:var
 .card{position:relative;z-index:1;width:min(1080px,100%);display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);background:#fff;border-radius:clamp(28px,4vw,52px);padding:clamp(8px,1vw,12px);box-shadow:0 30px 80px -30px rgb(20 14 10/.35)}
 .art{position:relative;min-height:clamp(520px,68vh,680px);overflow:hidden;background:var(--grain),radial-gradient(120% 90% at 18% 8%,#fff 0%,transparent 55%),radial-gradient(90% 70% at 90% 100%,var(--tint) 0%,transparent 70%),var(--panel);-webkit-mask:url("data:image/svg+xml,${MASK}") center/100% 100% no-repeat;mask:url("data:image/svg+xml,${MASK}") center/100% 100% no-repeat}
 .art__top{position:absolute;inset:26px 40px auto 34px;display:flex;justify-content:space-between;align-items:center;font-size:.9rem;font-weight:600;color:var(--ink)}
-.lockup{position:absolute;inset:50% 8% auto 8%;transform:translateY(-54%);display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:.22em .3em;text-align:center;line-height:.9}
+.lockup{position:absolute;inset:50% 8% auto 8%;transform:translateY(-52%);display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center;line-height:.9}
 .lockup .bergue{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2.6rem,6vw,4.4rem);letter-spacing:-.04em;font-variation-settings:'opsz' 144,'SOFT' 0,'WONK' 1;color:var(--accent)}
-.lockup .x{font-family:'Instrument Sans',sans-serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.9rem);color:var(--soft)}
+.lockup .x{font-family:'Instrument Sans',sans-serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.9rem);color:var(--soft);line-height:1}
+.lockup .sub{font-family:'Fraunces',serif;font-weight:500;font-style:italic;font-size:clamp(1.15rem,2.4vw,1.6rem);letter-spacing:.02em;color:var(--accent);margin-top:-.2rem}
 .lockup .nukleo{font-family:'Instrument Sans',sans-serif;font-weight:700;font-size:clamp(2.4rem,5.6vw,4.1rem);letter-spacing:-.045em;color:var(--nk-ink)}
 .lockup .nukleo i{display:inline-block;width:.17em;height:.17em;margin-left:.04em;background:var(--nk-blue)}
 .form{min-width:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,5vw,64px) clamp(24px,5vw,72px);gap:6px}
@@ -67,7 +71,7 @@ button:focus-visible{outline:2px solid var(--nk-blue);outline-offset:3px}
 @media (max-width:820px){
   body::before{display:none}
   .card{grid-template-columns:1fr}
-  .art{min-height:260px;-webkit-mask:none;mask:none;border-radius:calc(clamp(28px,4vw,52px) - 8px)}
+  .art{min-height:340px;-webkit-mask:none;mask:none;border-radius:calc(clamp(28px,4vw,52px) - 8px)}
   .lockup{inset:50% 6% auto 6%}
   .form{padding:28px 22px 30px}
   .form__tag{margin-bottom:26px}
@@ -84,7 +88,7 @@ const shell = (t, title, body) => `<!doctype html>
 
 const art = (t) => `<div class="art">
   <div class="art__top"><span>Propuesta de diseño</span></div>
-  <div class="lockup" role="img" aria-label="Bergue por Nukleo"><span class="bergue">Bergue</span><span class="x">×</span><span class="nukleo">Nukleo<i></i></span></div>
+  <div class="lockup" role="img" aria-label="Bergue ${escapeHtml(t.sub)} por Nukleo"><span class="bergue">Bergue</span><span class="sub">${escapeHtml(t.sub)}</span><span class="x">×</span><span class="nukleo">Nukleo<i></i></span></div>
 </div>`;
 
 export function gatePage(message, project = '') {

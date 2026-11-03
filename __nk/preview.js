@@ -99,6 +99,11 @@
     buildTimer(status);
     if (status.role === 'client' && !seenIntro()) buildIntro(status.days, function () {});
     root.classList.remove('nk-pending');
+    window.__nkStatus = status;
+    var panel = document.createElement('script');
+    panel.src = '/__nk/panel.js';
+    panel.defer = true;
+    document.head.appendChild(panel);
   }
 
   fetch('/__nk/status', { credentials: 'same-origin', cache: 'no-store' })

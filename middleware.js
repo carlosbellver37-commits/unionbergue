@@ -3,13 +3,14 @@
 // NK_PROJECT y BLOB_READ_WRITE_TOKEN (la crea Vercel al conectar el Blob store).
 import { next } from '@vercel/functions';
 import { get, put } from '@vercel/blob';
-import { gatePage, expiredPage } from './nk-pages.js';
+import { gatePage, expiredPage, themeFor } from './nk-pages.js';
+import { handleNotes } from './nk-notes.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const ADMIN_DAYS = 30;
-const PUBLIC_PATHS = new Set(['/__nk/preview.js']);
+const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js']);
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -133,6 +134,7 @@ async function login(request) {
 }
 
 async function status(session) {
+  const accent = themeFor(env('NK_PROJECT')).accent;
   if (session.role === 'admin') {
     let start = null;
     try {
@@ -140,9 +142,9 @@ async function status(session) {
     } catch (error) {
       console.error('[nukleo-preview]', error.message);
     }
-    return json({ role: 'admin', days: TRIAL_DAYS, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
+    return json({ role: 'admin', days: TRIAL_DAYS, accent, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
   }
-  return json({ role: 'client', days: TRIAL_DAYS, expires: session.expires });
+  return json({ role: 'client', days: TRIAL_DAYS, accent, expires: session.expires });
 }
 
 export default async function middleware(request) {
@@ -158,6 +160,8 @@ export default async function middleware(request) {
   }
 
   if (url.pathname === '/__nk/status') return status(session);
+  const notes = await handleNotes(request, url, session, env('NK_PROJECT'));
+  if (notes) return notes;
   if (url.pathname === '/__nk/logout') {
     return new Response(null, { status: 303, headers: { location: '/', 'set-cookie': sessionCookie('', Date.now()) } });
   }
