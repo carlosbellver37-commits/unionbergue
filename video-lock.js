@@ -21,6 +21,27 @@
     return attempt && attempt.catch ? attempt.catch(function () { /* se reintenta al interactuar */ }) : attempt;
   }
 
+  // Algunos navegadores (p. ej. Safari en iPhone) piden el vídeo sin la cookie de sesión y la web
+  // protegida responde 401. Si no carga, se descarga con la sesión y se reproduce desde memoria.
+  var MAX_RESCUE_BYTES = 25 * 1024 * 1024;
+  function rescue(video) {
+    if (video.__nkRescued || !window.fetch || !window.URL || !URL.createObjectURL) return;
+    var src = video.currentSrc || video.src;
+    if (!src || src.indexOf('blob:') === 0) return;
+    video.__nkRescued = true;
+    fetch(src, { credentials: 'same-origin' })
+      .then(function (res) { return res.ok ? res.blob() : Promise.reject(new Error('HTTP ' + res.status)); })
+      .then(function (blob) {
+        if (blob.size > MAX_RESCUE_BYTES) return;
+        video.removeAttribute('src');
+        [].forEach.call(video.querySelectorAll('source'), function (s) { s.remove(); });
+        video.src = URL.createObjectURL(blob);
+        video.load();
+        play(video);
+      })
+      .catch(function () { video.__nkRescued = false; /* se reintenta en el siguiente fallo */ });
+  }
+
   function lock(video) {
     if (video.__nkLocked) return;
     video.__nkLocked = true;
@@ -35,6 +56,7 @@
     video.setAttribute('webkit-playsinline', '');
     video.setAttribute('disablepictureinpicture', '');
     video.setAttribute('disableremoteplayback', '');
+    video.setAttribute('x-webkit-airplay', 'deny'); // Safari: sin botón de AirPlay
     video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback noplaybackrate');
     video.setAttribute('aria-hidden', 'true');
     video.setAttribute('tabindex', '-1');
@@ -61,6 +83,9 @@
     video.addEventListener('ratechange', function () { if (video.playbackRate !== 1) video.playbackRate = 1; });
     video.addEventListener('volumechange', function () { if (!video.muted) video.muted = true; });
 
+    video.addEventListener('error', function () { rescue(video); });
+    setTimeout(function () { if (video.readyState === 0 && (video.networkState === 3 || video.error)) rescue(video); }, 3000);
+
     play(video);
   }
 
@@ -71,7 +96,7 @@
 
   // Si el navegador bloquea el arranque automático (p. ej. ahorro de energía), arranca con la primera interacción.
   function resumeOnInteraction() {
-    var events = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
+    var events = ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown', 'scroll']; // iOS solo admite touchend/click como gesto
     var handler = function () {
       var paused = [].filter.call(document.querySelectorAll('video'), function (v) { return v.paused; });
       paused.forEach(play);

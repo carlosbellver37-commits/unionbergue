@@ -520,7 +520,7 @@
       if (r.bottom > window.innerHeight - 12) card.style.top = Math.max(12, window.innerHeight - 12 - r.height) + 'px';
     };
     fit();
-    if (window.ResizeObserver) new ResizeObserver(fit).observe(card);
+    if (window.ResizeObserver) new ResizeObserver(function () { requestAnimationFrame(fit); }).observe(card); // fuera del ciclo del observador: evita el aviso "loop completed"
   }
 
   function chipPicker(current, onPick) {
