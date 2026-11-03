@@ -29,6 +29,8 @@
       '.nk-timer{position:fixed;left:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:rgba(20,20,15,.9);color:#f3f1ea;font:600 12.5px/1 "Instrument Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;backdrop-filter:blur(8px);box-shadow:0 6px 24px rgba(0,0,0,.25)}' +
       '.nk-timer i{width:8px;height:8px;border-radius:50%;background:#5f86c4}' +
       '.nk-timer.is-low i{background:#ff9d8a}' +
+      '.nk-timer a{margin-left:4px;padding:5px 10px;border-radius:999px;background:rgba(243,241,234,.14);color:inherit;text-decoration:none}' +
+      '.nk-timer a:hover,.nk-timer a:focus-visible{background:rgba(243,241,234,.28);outline:none}' +
       '@media (prefers-reduced-motion:reduce){.nk-intro{transition:none}}';
     document.head.appendChild(style);
   }
@@ -65,6 +67,13 @@
     var label = document.createElement('span');
     el.appendChild(document.createElement('i'));
     el.appendChild(label);
+    if (status.role === 'admin') {
+      var exit = document.createElement('a');
+      exit.href = '/__nk/logout';
+      exit.textContent = 'Salir';
+      exit.setAttribute('aria-label', 'Salir del modo equipo');
+      el.appendChild(exit);
+    }
     document.body.appendChild(el);
 
     function tick() {

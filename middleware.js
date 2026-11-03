@@ -10,7 +10,6 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const ADMIN_DAYS = 30;
 const PUBLIC_PATHS = new Set(['/__nk/preview.js']);
-const PUBLIC_PREFIX = '/__nk/img/';
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -148,7 +147,7 @@ async function status(session) {
 
 export default async function middleware(request) {
   const url = new URL(request.url);
-  if (PUBLIC_PATHS.has(url.pathname) || url.pathname.startsWith(PUBLIC_PREFIX)) return next();
+  if (PUBLIC_PATHS.has(url.pathname)) return next();
 
   if (url.pathname === '/__nk/login' && request.method === 'POST') return login(request);
 
