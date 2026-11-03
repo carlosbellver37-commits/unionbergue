@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   var SEEN_KEY = 'nk-intro-seen';
+  var ALWAYS_SHOW = true; // true: el tutorial sale en cada entrada. Poner false para que salga solo una vez por sesión.
   var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js'];
   var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js'];
   var root = document.documentElement;
@@ -57,6 +58,7 @@
   }
 
   function seenIntro() {
+    if (ALWAYS_SHOW) return false;
     try { return sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) { return false; }
   }
 
