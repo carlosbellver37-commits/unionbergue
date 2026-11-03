@@ -509,6 +509,20 @@
     card.style.top = Math.max(12, Math.min(vy - 20, window.innerHeight - 340)) + 'px';
   }
 
+  // Coloca la tarjeta dentro de la pantalla y la mantiene visible aunque crezca (p. ej. al abrir "Responder").
+  function mountCard(card, vx, vy) {
+    placeCard(card, vx, vy);
+    card.style.maxHeight = window.innerHeight - 24 + 'px';
+    card.style.overflow = 'auto';
+    popup.appendChild(card);
+    var fit = function () {
+      var r = card.getBoundingClientRect();
+      if (r.bottom > window.innerHeight - 12) card.style.top = Math.max(12, window.innerHeight - 12 - r.height) + 'px';
+    };
+    fit();
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(card);
+  }
+
   function chipPicker(current, onPick) {
     var box = h('div', { class: 'chips' });
     var paint = function () {
@@ -554,8 +568,7 @@
     ]);
     var replyToggle = h('button', { type: 'button', onclick: function () { replyToggle.replaceWith(replyBox(note, function (fresh) { showBubble(fresh, index, pos); })); } }, 'Responder');
     actions.insertBefore(replyToggle, actions.lastChild);
-    placeCard(card, pos.x - window.scrollX, pos.y - window.scrollY);
-    popup.appendChild(card);
+    mountCard(card, pos.x - window.scrollX, pos.y - window.scrollY);
     state.bubble = note.id;
   }
 
@@ -580,8 +593,7 @@
       area, error,
       h('div', { class: 'actions' }, [h('button', { type: 'button', onclick: function () { showBubble(note, index, pos); } }, 'Cancelar'), save])
     ]);
-    placeCard(card, pos.x - window.scrollX, pos.y - window.scrollY);
-    popup.appendChild(card);
+    mountCard(card, pos.x - window.scrollX, pos.y - window.scrollY);
     setTimeout(function () { area.focus(); }, 30);
   }
 
@@ -628,8 +640,7 @@
       area, error,
       h('div', { class: 'actions' }, [h('button', { type: 'button', onclick: function () { closePopups(); setTool(null); } }, 'Cancelar'), send])
     ]);
-    placeCard(card, vx, vy);
-    popup.appendChild(card);
+    mountCard(card, vx, vy);
     setTimeout(function () { area.focus(); }, 30);
   }
 
