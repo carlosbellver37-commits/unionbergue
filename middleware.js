@@ -1,7 +1,8 @@
 // Nukleo Preview — acceso por contraseña y plazo de 7 días compartido.
 // Variables de entorno (Vercel): NK_SECRET, NK_CLIENT_PASSWORD, NK_ADMIN_PASSWORD,
-// NK_PROJECT, NK_EDGE_CONFIG_ID, NK_API_TOKEN.
+// NK_PROJECT y BLOB_READ_WRITE_TOKEN (la crea Vercel al conectar el Blob store).
 import { next } from '@vercel/functions';
+import { get, put } from '@vercel/blob';
 import { gatePage, expiredPage } from './nk-pages.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -9,7 +10,6 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const ADMIN_DAYS = 30;
 const PUBLIC_PATHS = new Set(['/__nk/preview.js']);
-const API = 'https://api.vercel.com/v1/edge-config';
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -66,33 +66,34 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
   });
 
-// ---- Reloj compartido en Edge Config (lectura consistente por la API de gestión) ----
-const itemKey = () => `${env('NK_PROJECT')}_start`;
-const apiHeaders = () => ({ authorization: `Bearer ${env('NK_API_TOKEN')}`, 'content-type': 'application/json' });
+// ---- Reloj compartido en Vercel Blob privado (una sola fecha de inicio por web) ----
+const startPath = () => `${env('NK_PROJECT')}-start.json`;
 
 async function readStart() {
-  const res = await fetch(`${API}/${env('NK_EDGE_CONFIG_ID')}/item/${itemKey()}`, { headers: apiHeaders() });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Edge Config lectura ${res.status}`);
-  const value = Number(await res.json());
+  const found = await get(startPath(), { access: 'private', useCache: false });
+  if (!found || found.statusCode === 404) return null;
+  const value = Number(JSON.parse(await new Response(found.stream).text()).start);
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-async function writeStart(value) {
-  const res = await fetch(`${API}/${env('NK_EDGE_CONFIG_ID')}/items`, {
-    method: 'PATCH',
-    headers: apiHeaders(),
-    body: JSON.stringify({ items: [{ operation: 'upsert', key: itemKey(), value }] }),
-  });
-  if (!res.ok) throw new Error(`Edge Config escritura ${res.status}`);
-}
-
+// Crea la fecha solo si no existe: si dos clientes entran a la vez gana el primero.
 async function ensureStart() {
   const existing = await readStart();
   if (existing) return existing;
   const now = Date.now();
-  await writeStart(now);
-  return now;
+  try {
+    await put(startPath(), JSON.stringify({ start: now }), {
+      access: 'private',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: false,
+    });
+    return now;
+  } catch (error) {
+    const winner = await readStart();
+    if (winner) return winner;
+    throw error;
+  }
 }
 
 // ---- Acciones ----
