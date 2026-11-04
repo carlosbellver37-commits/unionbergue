@@ -13,6 +13,8 @@ const SESSION_DAYS = 30;
 const START_CACHE_MS = 20 * 1000;
 const PUBLIC_PATHS = new Set(['/assets/og-bergue.jpg', '/__nk/panel-solo.js', '/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js', '/__nk/panel-proposal.js']);
 
+// Visitante sin contraseña: ve la web como cliente, sin plazo.
+const ANONYMOUS = { role: 'client', start: 0, expires: Infinity, anonymous: true };
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
 
@@ -202,7 +204,7 @@ async function status(session) {
     }
     return json({ role: 'admin', days: TRIAL_DAYS, accent, site, sub, theme, project: env('NK_PROJECT'), v, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
   }
-  return json({ role: 'client', days: TRIAL_DAYS, accent, site, sub, theme, project: env('NK_PROJECT'), v, expires: await deadlineFor(session) });
+  return json({ role: 'client', days: TRIAL_DAYS, accent, site, sub, theme, project: env('NK_PROJECT'), v, expires: session.anonymous ? null : await deadlineFor(session) });
 }
 
 export default async function middleware(request) {
@@ -214,9 +216,11 @@ export default async function middleware(request) {
   let session = await readSession(request);
   if (session && session.role === 'client' && (await isStaleClient(session))) session = null;
   if (!session) {
-    if (url.pathname.startsWith('/__nk/')) return json({ error: 'unauthorized' }, 401);
-    // 200 y no 401: WhatsApp y otros rastreadores ignoran la vista previa de páginas con error.
-    return html(gatePage('', env('NK_PROJECT')), 200);
+    // Web abierta: sin contraseña se ve la web y «Ver propuesta». El equipo entra por /__nk/entrar.
+    if (url.pathname === '/__nk/entrar') return html(gatePage('', env('NK_PROJECT')), 200);
+    // Sin sesión no se pueden crear ni leer avisos (evita spam al Telegram del equipo).
+    if (url.pathname.startsWith('/__nk/notes')) return json({ error: 'unauthorized' }, 401);
+    session = ANONYMOUS;
   }
 
   if (url.pathname === '/__nk/status') return status(session);
