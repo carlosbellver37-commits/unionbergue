@@ -611,7 +611,7 @@ h4 {
 /* El café ocupa la escena; los accesos flotan en su borde inferior. */
 @media (max-width: 760px), (max-aspect-ratio: 1/1), (max-height: 500px) {
   .hero { min-height: 100svh; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); flex-direction: column; align-items: stretch; }
-  .hero__media { position: absolute; inset: auto 0 auto; top: max(0px, calc((100svh - 10.5rem - 135vw) / 2)); width: 100%; height: min(calc(100% - 10.5rem), 135vw); min-height: 24rem; margin: 0; mask-image: linear-gradient(#000 91%, transparent); -webkit-mask-image: linear-gradient(#000 91%, transparent); }
+  .hero__media { position: absolute; inset: auto 0 auto; top: max(0px, calc((100svh - 10.5rem - 135vw) / 2)); width: 100%; height: min(calc(100% - 10.5rem), 135vw); min-height: 24rem; margin: 0; mask-image: linear-gradient(transparent 0, #000 9%, #000 82%, transparent 100%); -webkit-mask-image: linear-gradient(transparent 0, #000 9%, #000 82%, transparent 100%); }
   .hero__video { object-fit: cover; object-position: 83% 50%; }
   .vidrio { display: contents; }
   .vidrio::before, .vidrio::after, .trazo, .vidrio__sello, .nota { display: none; }
