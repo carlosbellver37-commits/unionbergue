@@ -11,7 +11,7 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const SESSION_DAYS = 30;
 const START_CACHE_MS = 20 * 1000;
-const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js']);
+const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js']);
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';

@@ -135,6 +135,7 @@
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && open) toggle(); });
   document.addEventListener('pointerdown', function (event) { if (open && event.composedPath().indexOf(host) === -1) toggle(); });
 
+  window.__nkSummaryApi = { rect: function () { return pill.getBoundingClientRect(); } };
   document.documentElement.appendChild(host);
   panel.subscribe(function (list) { notes = list; render(); });
   setInterval(render, 1000);

@@ -196,11 +196,11 @@
     '.hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:12px;padding:9px 10px 9px 16px;border-radius:999px;background:#14140f;color:#f3f1ea;box-shadow:0 10px 30px rgba(0,0,0,.3);white-space:nowrap}' +
     '.hint.on{display:flex}.hint button{padding:5px 12px;border-radius:999px;background:rgba(243,241,234,.16)}.hint button:hover{background:rgba(243,241,234,.28)}' +
     '.strip{position:fixed;right:10px;top:50%;transform:translateY(-50%);width:46px;padding:6px;border-radius:24px;background:rgba(251,250,246,.96);border:1px solid rgba(20,20,15,.1);box-shadow:0 12px 36px rgba(20,20,15,.22);display:flex;flex-direction:column;gap:2px;overflow:hidden;backdrop-filter:blur(8px);transition:width .22s cubic-bezier(.16,1,.3,1)}' +
-    '.strip:hover,.strip:focus-within,.strip.is-hello{width:184px}' +
+    '.strip:hover,.strip:focus-within,.strip.is-hello,.strip.is-tour{width:184px}' +
     '.tool{position:relative;display:flex;align-items:center;gap:12px;height:34px;padding:0 7px;border-radius:17px;white-space:nowrap;text-align:left;transition:background .15s}' +
     '.tool:hover{background:rgba(20,20,15,.07)}.tool[aria-pressed="true"]{background:' + ACCENT + ';color:#fff}' +
     '.tool .ico{flex:none;width:20px;height:20px}.tool .ico svg{width:20px;height:20px;display:block}' +
-    '.tool .lbl{opacity:0;transition:opacity .15s}.strip:hover .lbl,.strip:focus-within .lbl,.strip.is-hello .lbl{opacity:1}' +
+    '.tool .lbl{opacity:0;transition:opacity .15s}.strip:hover .lbl,.strip:focus-within .lbl,.strip.is-hello .lbl,.strip.is-tour .lbl{opacity:1}' +
     '.badge{position:absolute;left:21px;top:1px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#14140f;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}' +
     '.badge.is-new{background:#b3321f}' +
     '.drawer{position:fixed;right:66px;top:12px;bottom:12px;width:min(350px,calc(100vw - 84px));display:none;flex-direction:column;border-radius:22px;background:#fbfaf6;border:1px solid rgba(20,20,15,.1);box-shadow:0 20px 50px rgba(20,20,15,.28);overflow:hidden}' +
@@ -229,7 +229,7 @@
     '.err{color:#b3321f;font-size:13px;min-height:1em;margin:0}' +
     '.toast{position:fixed;left:50%;bottom:72px;transform:translate(-50%,12px);padding:10px 18px;border-radius:999px;background:#14140f;color:#f3f1ea;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:calc(100vw - 24px)}' +
     '.toast.on{opacity:1;transform:translate(-50%,0)}' +
-    '@media (max-width:640px){.strip:hover,.strip:focus-within{width:46px}.strip.is-hello{width:46px}.tool .lbl{display:none}.drawer{right:10px;left:10px;width:auto;bottom:70px}.card{left:12px!important;right:12px;top:auto!important;bottom:76px;width:auto}.hint{white-space:normal;max-width:calc(100vw - 24px)}}' +
+    '@media (max-width:640px){.strip:hover,.strip:focus-within{width:46px}.strip.is-hello,.strip.is-tour{width:46px}.tool .lbl{display:none}.drawer{right:10px;left:10px;width:auto;bottom:70px}.card{left:12px!important;right:12px;top:auto!important;bottom:76px;width:auto}.hint{white-space:normal;max-width:calc(100vw - 24px)}}' +
     '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}';
 
   var layer = h('div', { class: 'layer' });
@@ -748,6 +748,13 @@
     getNotes: function () { return state.notes; },
     subscribe: function (fn) { listeners.push(fn); fn(state.notes); },
     openList: function () { setDrawer(true); },
+    // Para el recorrido guiado: posición de cada herramienta y tira abierta con sus etiquetas.
+    toolRect: function (name) {
+      var order = { pin: 0, zone: 1, text: 2, list: 3 };
+      var button = strip.querySelectorAll('.tool')[order[name]];
+      return button ? button.getBoundingClientRect() : null;
+    },
+    tourStrip: function (on) { strip.classList.toggle('is-tour', !!on); },
     setInbox: function (fn) { inboxRenderer = fn; renderDrawer(); },
     core: {
       h: h, api: api, ago: ago, say: say, shadow: shadow, TYPES: TYPES, colorOf: colorOf,

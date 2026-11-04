@@ -2,8 +2,8 @@
 (function () {
   'use strict';
   var SEEN_KEY = 'nk-intro-seen';
-  var ALWAYS_SHOW = true; // true: el tutorial sale en cada entrada. Poner false para que salga solo una vez por sesión.
-  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js'];
+  var ALWAYS_SHOW = false; // true: el tutorial sale en cada entrada. Poner false para que salga solo una vez por sesión.
+  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-tour.js'];
   var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js'];
   var root = document.documentElement;
 
@@ -61,6 +61,9 @@
     button.addEventListener('click', function () {
       try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* sin almacenamiento */ }
       el.classList.add('is-out');
+      // Tras la bienvenida, recorrido guiado sobre la web real (paso 1, paso 2…).
+      if (window.__nkStartTour) window.__nkStartTour();
+      else window.__nkTourPending = true;
       setTimeout(function () { el.remove(); }, 600);
     });
     document.body.appendChild(el);
