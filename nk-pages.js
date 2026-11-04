@@ -3,6 +3,7 @@
 const THEMES = {
   'web-union-bergue': {
     label: 'Unión Bergue',
+    og: { title: 'Bergue · Pastelería, panadería y cafetería', description: 'Elige tu cafetería, Las Tablas o Montecarmelo, y haz tu encargo.', image: 'https://web-union-bergue.vercel.app/assets/og-bergue.jpg' },
     sub: 'Family',
     page: '#e9e6d9',
     panel: '#efeee4',
@@ -81,7 +82,7 @@ button:focus-visible{outline:2px solid var(--nk-blue);outline-offset:3px}
 
 const shell = (t, title, body) => `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>${escapeHtml(title)}</title>
+<meta name="robots" content="noindex,nofollow">${t.og ? `<meta property="og:type" content="website"><meta property="og:title" content="${escapeHtml(t.og.title)}"><meta property="og:description" content="${escapeHtml(t.og.description)}"><meta property="og:image" content="${t.og.image}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${t.og.image}">` : ''}<title>${escapeHtml(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,900,0,1&family=Instrument+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 <style>${css(t)}</style></head><body>${body}</body></html>`;

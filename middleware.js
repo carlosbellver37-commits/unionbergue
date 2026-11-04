@@ -11,7 +11,7 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const SESSION_DAYS = 30;
 const START_CACHE_MS = 20 * 1000;
-const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js', '/__nk/panel-proposal.js']);
+const PUBLIC_PATHS = new Set(['/assets/og-bergue.jpg', '/__nk/panel-solo.js', '/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js', '/__nk/panel-proposal.js']);
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -178,7 +178,6 @@ async function login(request) {
     console.error('[nukleo-preview]', error.message);
     return html(gatePage('No se pudo comprobar el plazo. Inténtalo de nuevo en unos minutos.', env('NK_PROJECT')), 503);
   }
-  if (start + TRIAL_DAYS * DAY_MS <= Date.now()) return html(expiredPage(env('NK_PROJECT')), 403);
 
   const expires = Date.now() + SESSION_DAYS * DAY_MS;
   return new Response(null, {
@@ -217,11 +216,6 @@ export default async function middleware(request) {
   if (!session) {
     if (url.pathname.startsWith('/__nk/')) return json({ error: 'unauthorized' }, 401);
     return html(gatePage('', env('NK_PROJECT')), 401);
-  }
-
-  if (session.role === 'client' && (await deadlineFor(session)) <= Date.now()) {
-    if (url.pathname.startsWith('/__nk/')) return json({ error: 'expired' }, 403);
-    return html(expiredPage(env('NK_PROJECT')), 403, { 'set-cookie': sessionCookie('', Date.now()) });
   }
 
   if (url.pathname === '/__nk/status') return status(session);

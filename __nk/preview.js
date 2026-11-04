@@ -3,7 +3,10 @@
   'use strict';
   var SEEN_KEY = 'nk-intro-seen';
   var ALWAYS_SHOW = false; // true: el tutorial sale en cada entrada. Poner false para que salga solo una vez por sesión.
-  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-proposal.js', '/__nk/panel-tour.js'];
+  var PROPOSAL_ONLY = true; // true: el cliente solo ve el botón «Ver propuesta» (sin bienvenida, barra de cambios, guía ni contador).
+  var CLIENT_SCRIPTS = PROPOSAL_ONLY
+    ? ['/__nk/panel-proposal.js', '/__nk/panel-solo.js']
+    : ['/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-proposal.js', '/__nk/panel-tour.js'];
   var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js', '/__nk/panel-proposal.js'];
   var root = document.documentElement;
 
@@ -90,7 +93,7 @@
     window.__nkStatus = status;
     injectStyles();
     window.__nkShowIntro = function () { if (!document.querySelector('.nk-intro')) buildIntro(status.days); };
-    if (status.role === 'client' && !seenIntro()) buildIntro(status.days);
+    if (status.role === 'client' && !PROPOSAL_ONLY && !seenIntro()) buildIntro(status.days);
     root.classList.remove('nk-pending');
     loadScripts(status);
   }

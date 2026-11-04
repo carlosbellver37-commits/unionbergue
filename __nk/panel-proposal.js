@@ -184,7 +184,7 @@
 
   function proposalView(d, ticker) {
     d = Object.assign({}, d, { days_note: 'Cualquier duda, escríbenos y lo vemos.' });
-    return [hero(d), priceCard(d.price)].concat(d.payment ? [paymentBlock(d.payment)] : [], [includes(d), daysBlock(d.changes, ticker), searchBlock(d), nextBlock(d)]);
+    return [hero(d), priceCard(d.price)].concat(d.payment ? [paymentBlock(d.payment)] : [], [includes(d)], d.changes ? [daysBlock(d.changes, ticker)] : [], [searchBlock(d), nextBlock(d)]);
   }
 
   function brandingView(d, zoom) {

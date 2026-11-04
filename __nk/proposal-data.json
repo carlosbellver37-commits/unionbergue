@@ -339,6 +339,7 @@
   "variants": {
     "web-union-bergue": {
       "propuesta": {
+        "changes": null,
         "lead": "Una web propia para Unión Bergue, rápida y pensada para el móvil, que reúne vuestros dos establecimientos. Aquí tienes lo que incluye, cómo se plantea y cómo seguimos.",
         "price": {
           "label": "Inversión",
@@ -401,18 +402,9 @@
           ]
         ],
         "next": [
-          [
-            "La veis y pedís cambios",
-            "Durante los 7 días, con la barra de la derecha."
-          ],
-          [
-            "Completamos con vuestros datos",
-            "Teléfono, WhatsApp, correo, horarios de cada local y lo que falte."
-          ],
-          [
-            "Publicamos",
-            "En pasteleriabergue.com, con el SEO y el GEO preparados."
-          ]
+          ["La veis y nos contáis", "Vuestras impresiones y lo que cambiaríais."],
+          ["Completamos con vuestros datos", "Teléfono, WhatsApp, correo, horarios de cada local y lo que falte."],
+          ["Publicamos", "En pasteleriabergue.com, con el SEO y el GEO preparados."]
         ]
       }
     },
