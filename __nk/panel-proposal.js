@@ -52,6 +52,13 @@
       ';--soft:' + safe(t.soft, '#6b5340') + ';--accent:' + safe(t.accent, '#964b36') + ';--tint:' + safe(t.tint, '#d9b9a3') + '}';
   }
 
+  // Cada web puede ajustar su propuesta (precio, dominio…) sobre la base común.
+  function dataFor(key) {
+    var all = cache.data;
+    var override = all.variants && all.variants[status.project] && all.variants[status.project][key];
+    return override ? Object.assign({}, all[key], override) : all[key];
+  }
+
   function reveal(el) { el.classList.add('rv'); return el; }
 
   function lockup() {
@@ -74,20 +81,34 @@
     ]));
   }
 
+  function priceNumbers(p) {
+    if (p.free) {
+      return [
+        h('div', { class: 'nums' }, h('div', { class: 'big word' }, p.free.title)),
+        h('p', { class: 'free-text' }, p.free.text),
+        h('div', { class: 'nums' }, [
+          h('span', { class: 'plus' }, [h('b', {}, '+'), p.free.monthly + ' €']),
+          h('span', { class: 'unit' }, p.free.monthlyLabel)
+        ]),
+        h('span', { class: 'iva' }, p.free.split)
+      ];
+    }
+    return [
+      h('div', { class: 'nums' }, [
+        h('div', { class: 'big' }, [String(p.initial), h('small', {}, '€')]),
+        h('span', { class: 'unit' }, p.initialLabel)
+      ]),
+      h('div', { class: 'nums' }, [
+        h('span', { class: 'plus' }, [h('b', {}, '+'), p.monthly + ' €']),
+        h('span', { class: 'unit' }, p.monthlyLabel)
+      ]),
+      h('span', { class: 'iva' }, p.note)
+    ];
+  }
+
   function priceCard(p) {
     return reveal(h('section', { class: 'price', 'aria-label': p.label }, [
-      h('div', {}, [
-        h('p', { class: 'lab' }, p.label),
-        h('div', { class: 'nums' }, [
-          h('div', { class: 'big' }, [String(p.initial), h('small', {}, '€')]),
-          h('span', { class: 'unit' }, p.initialLabel)
-        ]),
-        h('div', { class: 'nums' }, [
-          h('span', { class: 'plus' }, [h('b', {}, '+'), p.monthly + ' €']),
-          h('span', { class: 'unit' }, p.monthlyLabel)
-        ]),
-        h('span', { class: 'iva' }, p.note)
-      ]),
+      h('div', {}, [h('p', { class: 'lab' }, p.label)].concat(priceNumbers(p))),
       h('div', { class: 'covers' }, [
         h('h3', {}, p.coversTitle),
         list('', p.covers.map(function (c) { return h('li', {}, [h('b', {}, c[0]), h('span', {}, c[1])]); }))
@@ -142,7 +163,7 @@
     return reveal(h('section', {}, [
       h('div', { class: 'sec-head' }, h('h2', {}, d.nextTitle)),
       list('steps', d.next.map(function (s) { return h('li', {}, [h('b', {}, s[0]), h('span', {}, s[1])]); })),
-      h('p', { class: 'foot' }, 'Precio con IVA incluido. ' + d.days_note)
+      h('p', { class: 'foot' }, (d.price.footnote ? d.price.footnote + ' ' : '') + d.days_note)
     ]));
   }
 
@@ -274,7 +295,7 @@
       if (io) io.disconnect();
       tickers = [];
       main.textContent = '';
-      var d = (data || cache.data)[key];
+      var d = dataFor(key);
       var nodes = key === 'branding' ? brandingView(d, zoom) : proposalView(d, tickers);
       nodes.forEach(function (n) { main.appendChild(n); });
       ov.scrollTop = 0;

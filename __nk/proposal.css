@@ -57,6 +57,8 @@ h2{font-weight:700;font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.05;letter-
 .nums{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 22px;margin:14px 0 8px}
 .big{font-weight:700;font-size:clamp(3.6rem,10vw,6.6rem);line-height:.92;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
 .big small{font-size:.38em;letter-spacing:-.02em;font-weight:600;margin-left:.05em}
+.big.word{font-size:clamp(2.8rem,8vw,5rem);line-height:1;font-family:'Fraunces',serif;font-style:italic;font-weight:500;letter-spacing:-.03em;color:#fff}
+.free-text{margin:0 0 18px;max-width:34ch;color:rgba(243,241,234,.78)}
 .unit{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:1.25rem;color:#e7b9a3}
 .plus{font-weight:600;font-size:clamp(1.5rem,3.2vw,2.2rem);letter-spacing:-.03em}
 .plus b{font-size:1.5em;font-weight:700;margin-inline:.1em}

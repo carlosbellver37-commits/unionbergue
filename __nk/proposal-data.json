@@ -12,21 +12,55 @@
       "note": "IVA incluido",
       "coversTitle": "La cuota mensual cubre",
       "covers": [
-        ["Hosting y dominio", "Alta y renovación incluidas."],
-        ["Soporte", "Si algo falla o tienes una duda, nos escribes."],
-        ["Copias de seguridad", "Tu web siempre a salvo."],
-        ["Errores corregidos", "Sin coste mientras estés con nosotros."]
-      ]
+        [
+          "Hosting y dominio",
+          "Alta y renovación incluidas."
+        ],
+        [
+          "Soporte",
+          "Si algo falla o tienes una duda, nos escribes."
+        ],
+        [
+          "Copias de seguridad",
+          "Tu web siempre a salvo."
+        ],
+        [
+          "Errores corregidos",
+          "Sin coste mientras estés con nosotros."
+        ]
+      ],
+      "footnote": "Precio con IVA incluido."
     },
     "includesTitle": "Todo lo que incluye la web",
     "includes": [
-      ["Diseño propio", "Con la identidad de Bergue, no una plantilla: colores, tipografía e ilustración de obrador."],
-      ["Móvil, tablet y ordenador", "Un único diseño que se adapta a cualquier pantalla."],
-      ["Encargos desde la web", "Tus clientes eligen, avisan y recogen, sin tener que llamar."],
-      ["Tiendas y horario", "La dirección y el horario de cada cafetería, fáciles de encontrar."],
-      ["Una portada con vida", "Vídeo y animaciones suaves que enseñan el obrador sin ralentizar la web."],
-      ["Textos legales", "Aviso legal, privacidad y cookies."],
-      ["Hosting y dominio", "Te lo ponemos todo online y lo mantenemos funcionando."]
+      [
+        "Diseño propio",
+        "Con la identidad de Bergue, no una plantilla: colores, tipografía e ilustración de obrador."
+      ],
+      [
+        "Móvil, tablet y ordenador",
+        "Un único diseño que se adapta a cualquier pantalla."
+      ],
+      [
+        "Encargos desde la web",
+        "Tus clientes eligen, avisan y recogen, sin tener que llamar."
+      ],
+      [
+        "Tiendas y horario",
+        "La dirección y el horario de cada cafetería, fáciles de encontrar."
+      ],
+      [
+        "Una portada con vida",
+        "Vídeo y animaciones suaves que enseñan el obrador sin ralentizar la web."
+      ],
+      [
+        "Textos legales",
+        "Aviso legal, privacidad y cookies."
+      ],
+      [
+        "Hosting y dominio",
+        "Te lo ponemos todo online y lo mantenemos funcionando."
+      ]
     ],
     "changes": {
       "number": "7",
@@ -34,9 +68,18 @@
       "text": "Desde que entras por primera vez tienes 7 días para revisar la web y pedirnos los cambios que necesites con la barra de la derecha: comentar un punto, marcar una zona o cambiar un texto. Nos llegan al momento.",
       "after": "Pasado el plazo, la web y la propuesta se cancelan, con posibilidad de renegociación.",
       "steps": [
-        ["Entras", "Empieza tu plazo de 7 días."],
-        ["Pides cambios", "Con la barra de la derecha, cuando quieras."],
-        ["Lo aplicamos", "Y dejamos la web lista para publicar."]
+        [
+          "Entras",
+          "Empieza tu plazo de 7 días."
+        ],
+        [
+          "Pides cambios",
+          "Con la barra de la derecha, cuando quieras."
+        ],
+        [
+          "Lo aplicamos",
+          "Y dejamos la web lista para publicar."
+        ]
       ]
     },
     "searchTitle": "Que te encuentren, y que te recomienden",
@@ -63,9 +106,18 @@
     },
     "nextTitle": "Cómo seguimos",
     "next": [
-      ["La veis y pedís cambios", "Durante los 7 días, con la barra de la derecha."],
-      ["Completamos con vuestros datos", "Teléfono, WhatsApp, correo, horarios y lo que falte."],
-      ["Publicamos", "En vuestro dominio, con el SEO y el GEO preparados."]
+      [
+        "La veis y pedís cambios",
+        "Durante los 7 días, con la barra de la derecha."
+      ],
+      [
+        "Completamos con vuestros datos",
+        "Teléfono, WhatsApp, correo, horarios y lo que falte."
+      ],
+      [
+        "Publicamos",
+        "En vuestro dominio, con el SEO y el GEO preparados."
+      ]
     ]
   },
   "branding": {
@@ -74,71 +126,295 @@
     "lead": "La masa reposa, el pan fermenta y el horno se enciende de madrugada. Lo que tardamos en hacerlo es lo que ponemos en la bolsa: frases cortas, cercanas y con un guiño, en lugar de rótulos de producto.",
     "phrasesTitle": "La voz de la casa",
     "phrases": [
-      ["Bolsas de pan", "Pan de verdad. · Crujiente por fuera."],
-      ["Bollería", "Aún calentito."],
-      ["Caja de tarta", "Hoy hay tarta. · Para compartir."],
-      ["Cajas", "Un capricho. · Para quedar bien."],
-      ["Vasos", "Sin prisa. · Buenos días. · Con un croissant."],
-      ["Tarjeta y roscón", "Vuelve pronto. · Que toque el haba."]
+      [
+        "Bolsas de pan",
+        "Pan de verdad. · Crujiente por fuera."
+      ],
+      [
+        "Bollería",
+        "Aún calentito."
+      ],
+      [
+        "Caja de tarta",
+        "Hoy hay tarta. · Para compartir."
+      ],
+      [
+        "Cajas",
+        "Un capricho. · Para quedar bien."
+      ],
+      [
+        "Vasos",
+        "Sin prisa. · Buenos días. · Con un croissant."
+      ],
+      [
+        "Tarjeta y roscón",
+        "Vuelve pronto. · Que toque el haba."
+      ]
     ],
     "paletteTitle": "Clara y cálida, con el burdeos como tinta",
     "palette": [
-      ["Crema", "#F3EBDC", "Papel y base de todo.", "dark"],
-      ["Rosa", "#F0CFC2", "Pan, tarjeta e interiores.", "dark"],
-      ["Terracota claro", "#C9785A", "Tapas y bandas.", "light"],
-      ["Terracota", "#9A4C37", "Cajas y vasos.", "light"],
-      ["Burdeos", "#561D1F", "Solo como tinta: letras y dibujos.", "light"]
+      [
+        "Crema",
+        "#F3EBDC",
+        "Papel y base de todo.",
+        "dark"
+      ],
+      [
+        "Rosa",
+        "#F0CFC2",
+        "Pan, tarjeta e interiores.",
+        "dark"
+      ],
+      [
+        "Terracota claro",
+        "#C9785A",
+        "Tapas y bandas.",
+        "light"
+      ],
+      [
+        "Terracota",
+        "#9A4C37",
+        "Cajas y vasos.",
+        "light"
+      ],
+      [
+        "Burdeos",
+        "#561D1F",
+        "Solo como tinta: letras y dibujos.",
+        "light"
+      ]
     ],
     "typeTitle": "Dos letras, las de siempre",
     "type": [
-      ["Fraunces Black", "Logotipo", "Bergue", "display"],
-      ["Fraunces Italic", "Frases", "Hoy hay tarta.", "italic"],
-      ["Roboto Light", "Textos pequeños", "Desayunos, meriendas y encargos para cada celebración, hechos cada día en nuestro obrador familiar.", "body"]
+      [
+        "Fraunces Black",
+        "Logotipo",
+        "Bergue",
+        "display"
+      ],
+      [
+        "Fraunces Italic",
+        "Frases",
+        "Hoy hay tarta.",
+        "italic"
+      ],
+      [
+        "Roboto Light",
+        "Textos pequeños",
+        "Desayunos, meriendas y encargos para cada celebración, hechos cada día en nuestro obrador familiar.",
+        "body"
+      ]
     ],
     "packTitle": "El packaging, pieza a pieza",
     "pack": [
-      ["bolsa-bolleria", "Bolsa de bollería", "La B. sobre papel crema, con el croissant asomando."],
-      ["bolsas-pan", "Bolsas de pan", "Tres tamaños, tres colores, cada una con su frase y su personaje."],
-      ["caja-tarta-terracota", "Caja de tarta", "Terracota con los dibujos y las frases en crema."],
-      ["caja-pequena", "Caja pequeña", "Para pasteles sueltos. Cada cara lleva una escena."],
-      ["caja-premium", "Caja premium", "Terracota por fuera, rosa por dentro, con papel de seda y tarjeta."],
-      ["vasos", "Vasos", "Un color, una frase y un personaje por vaso."],
-      ["tarjeta", "Tarjeta de fidelidad", "Ocho sellos, uno por compra."],
-      ["heladeria", "Heladería", "«Para cuando aprieta el calor.»"],
-      ["gourmet", "Gourmet", "«Lo bueno, también para llevar a casa.»"],
-      ["roscon", "Temporada", "«Que toque el haba.» Caja redonda para el roscón."],
-      ["envoltorio", "Papel, cinta y sello", "Papel de seda con los dibujos y pegatina del sello de obrador."],
-      ["tela", "Tela y equipo", "Bolsa de tela, delantal rosa con la B. y servilleta."],
-      ["ilustraciones", "Las ilustraciones", "Personajes y objetos de obrador que dan vida a cada pieza."]
+      [
+        "bolsa-bolleria",
+        "Bolsa de bollería",
+        "La B. sobre papel crema, con el croissant asomando."
+      ],
+      [
+        "bolsas-pan",
+        "Bolsas de pan",
+        "Tres tamaños, tres colores, cada una con su frase y su personaje."
+      ],
+      [
+        "caja-tarta-terracota",
+        "Caja de tarta",
+        "Terracota con los dibujos y las frases en crema."
+      ],
+      [
+        "caja-pequena",
+        "Caja pequeña",
+        "Para pasteles sueltos. Cada cara lleva una escena."
+      ],
+      [
+        "caja-premium",
+        "Caja premium",
+        "Terracota por fuera, rosa por dentro, con papel de seda y tarjeta."
+      ],
+      [
+        "vasos",
+        "Vasos",
+        "Un color, una frase y un personaje por vaso."
+      ],
+      [
+        "tarjeta",
+        "Tarjeta de fidelidad",
+        "Ocho sellos, uno por compra."
+      ],
+      [
+        "heladeria",
+        "Heladería",
+        "«Para cuando aprieta el calor.»"
+      ],
+      [
+        "gourmet",
+        "Gourmet",
+        "«Lo bueno, también para llevar a casa.»"
+      ],
+      [
+        "roscon",
+        "Temporada",
+        "«Que toque el haba.» Caja redonda para el roscón."
+      ],
+      [
+        "envoltorio",
+        "Papel, cinta y sello",
+        "Papel de seda con los dibujos y pegatina del sello de obrador."
+      ],
+      [
+        "tela",
+        "Tela y equipo",
+        "Bolsa de tela, delantal rosa con la B. y servilleta."
+      ],
+      [
+        "ilustraciones",
+        "Las ilustraciones",
+        "Personajes y objetos de obrador que dan vida a cada pieza."
+      ]
     ],
     "contest": {
       "title": "Una caja dibujada por el barrio",
       "text": "Proponemos un concurso de dibujo abierto a clientes y vecinos. El dibujo ganador pasa a ser el diseño de una caja de tarta de Bergue.",
       "note": "Bases, fechas y premio, por definir juntos.",
       "steps": [
-        ["Convocatoria", "Se reparte una plantilla de caja de tarta en las tiendas y en redes. Cualquiera puede dibujar la suya."],
-        ["Exposición", "Los dibujos se cuelgan en tienda y se publican en redes mientras dura la campaña."],
-        ["Elección", "Votan los clientes y el equipo de Bergue."],
-        ["La caja ganadora", "El dibujo elegido se produce como caja de tarta de edición limitada, con el nombre de su autor o autora en la tapa."]
+        [
+          "Convocatoria",
+          "Se reparte una plantilla de caja de tarta en las tiendas y en redes. Cualquiera puede dibujar la suya."
+        ],
+        [
+          "Exposición",
+          "Los dibujos se cuelgan en tienda y se publican en redes mientras dura la campaña."
+        ],
+        [
+          "Elección",
+          "Votan los clientes y el equipo de Bergue."
+        ],
+        [
+          "La caja ganadora",
+          "El dibujo elegido se produce como caja de tarta de edición limitada, con el nombre de su autor o autora en la tapa."
+        ]
       ]
     },
     "nextTitle": "Qué decidimos juntos",
     "choose": {
       "title": "A elegir",
       "items": [
-        ["Las frases", "¿Encajan con la voz de la casa?"],
-        ["El concurso", "¿Lanzamos el concurso de dibujo para la caja de tarta?"],
-        ["El perro", "¿Lo hacemos personaje fijo de la marca?"],
-        ["La tarjeta", "¿Ocho sellos por un café de la casa?"]
+        [
+          "Las frases",
+          "¿Encajan con la voz de la casa?"
+        ],
+        [
+          "El concurso",
+          "¿Lanzamos el concurso de dibujo para la caja de tarta?"
+        ],
+        [
+          "El perro",
+          "¿Lo hacemos personaje fijo de la marca?"
+        ],
+        [
+          "La tarjeta",
+          "¿Ocho sellos por un café de la casa?"
+        ]
       ]
     },
     "after": {
       "title": "Después",
       "items": [
-        ["Bases y calendario", "del concurso de dibujo."],
-        ["Archivos finales", "del logotipo, el monograma y el sello."],
-        ["Muestras", "de bolsas y cajas para ver el papel y el color."]
+        [
+          "Bases y calendario",
+          "del concurso de dibujo."
+        ],
+        [
+          "Archivos finales",
+          "del logotipo, el monograma y el sello."
+        ],
+        [
+          "Muestras",
+          "de bolsas y cajas para ver el papel y el color."
+        ]
       ]
+    }
+  },
+  "variants": {
+    "web-union-bergue": {
+      "propuesta": {
+        "lead": "Una web propia para Unión Bergue, rápida y pensada para el móvil, que reúne vuestros dos establecimientos. Aquí tienes lo que incluye, cómo se plantea y cómo seguimos.",
+        "price": {
+          "label": "Inversión",
+          "free": {
+            "title": "De cortesía",
+            "text": "La web es un detalle nuestro, un regalo por haber realizado la compra de los dos establecimientos.",
+            "monthly": 12,
+            "monthlyLabel": "al mes de mantenimiento",
+            "split": "Se reparte entre los dos locales: 6 € cada uno."
+          },
+          "coversTitle": "El mantenimiento mensual cubre",
+          "covers": [
+            [
+              "Hosting",
+              "Tu web siempre online."
+            ],
+            [
+              "Soporte",
+              "Si algo falla o tienes una duda, nos escribes."
+            ],
+            [
+              "Copias de seguridad",
+              "Tu web siempre a salvo."
+            ],
+            [
+              "Errores corregidos",
+              "Sin coste mientras estés con nosotros."
+            ]
+          ],
+          "footnote": "La web no tiene coste. Solo el mantenimiento mensual."
+        },
+        "includes": [
+          [
+            "Diseño propio",
+            "Con la identidad de Bergue, no una plantilla: colores, tipografía e ilustración de obrador."
+          ],
+          [
+            "Móvil, tablet y ordenador",
+            "Un único diseño que se adapta a cualquier pantalla."
+          ],
+          [
+            "Encargos desde la web",
+            "Tus clientes eligen, avisan y recogen, sin tener que llamar."
+          ],
+          [
+            "Las dos tiendas",
+            "La dirección y el horario de cada local, fáciles de encontrar."
+          ],
+          [
+            "Una portada con vida",
+            "Vídeo y animaciones suaves que enseñan el obrador sin ralentizar la web."
+          ],
+          [
+            "Textos legales",
+            "Aviso legal, privacidad y cookies."
+          ],
+          [
+            "Tu dominio de siempre",
+            "La web se publica en pasteleriabergue.com, el que ya tenéis. No hay que comprar ni cambiar nada."
+          ]
+        ],
+        "next": [
+          [
+            "La veis y pedís cambios",
+            "Durante los 7 días, con la barra de la derecha."
+          ],
+          [
+            "Completamos con vuestros datos",
+            "Teléfono, WhatsApp, correo, horarios de cada local y lo que falte."
+          ],
+          [
+            "Publicamos",
+            "En pasteleriabergue.com, con el SEO y el GEO preparados."
+          ]
+        ]
+      }
     }
   }
 }

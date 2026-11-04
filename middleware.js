@@ -185,9 +185,9 @@ async function status(session) {
     } catch (error) {
       console.error('[nukleo-preview]', error.message);
     }
-    return json({ role: 'admin', days: TRIAL_DAYS, accent, site, sub, theme, v, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
+    return json({ role: 'admin', days: TRIAL_DAYS, accent, site, sub, theme, project: env('NK_PROJECT'), v, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
   }
-  return json({ role: 'client', days: TRIAL_DAYS, accent, site, sub, theme, v, expires: await deadlineFor(session) });
+  return json({ role: 'client', days: TRIAL_DAYS, accent, site, sub, theme, project: env('NK_PROJECT'), v, expires: await deadlineFor(session) });
 }
 
 export default async function middleware(request) {
