@@ -69,6 +69,22 @@ h2{font-weight:700;font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.05;letter-
 .covers b{font-weight:600}
 .covers span{color:rgba(243,241,234,.66);font-size:.92rem}
 
+/* pagos */
+.pay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:p}
+.pay li{display:grid;gap:6px;align-content:start;background:#fff;border:1px solid var(--line);border-radius:clamp(20px,2.6vw,30px);padding:clamp(18px,2.6vw,28px);position:relative}
+.pay li:nth-child(2){background:var(--panel)}
+.pay li:nth-child(3){background:var(--nk-ink);color:#f3f1ea;border-color:transparent}
+.pay-tag{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.pay li:nth-child(3) .pay-tag{color:#e7b9a3}
+.pay-amt{font-weight:700;font-size:clamp(2.2rem,4.6vw,3.2rem);line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--nk-ink)}
+.pay li:nth-child(3) .pay-amt{color:#fff}
+.pay-amt small{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:.4em;letter-spacing:0;margin-left:.5em;color:var(--accent)}
+.pay li:nth-child(3) .pay-amt small{color:#e7b9a3}
+.pay b{font-size:1.1rem;margin-top:6px}
+.pay-text{color:var(--soft)}
+.pay li:nth-child(3) .pay-text{color:rgba(243,241,234,.72)}
+.pay li:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);z-index:1;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:.85rem}
+
 /* qué incluye */
 .sec-head{display:grid;gap:4px;margin-bottom:clamp(14px,3vw,28px)}
 .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 clamp(24px,5vw,64px);counter-reset:n}
@@ -161,7 +177,8 @@ h2{font-weight:700;font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.05;letter-
 @media (max-width:860px){
   .hero,.price,.days,.bhero,.contest,.two{grid-template-columns:minmax(0,1fr)}
   .art{min-height:300px}
-  .list,.search,.steps{grid-template-columns:minmax(0,1fr)}
+  .list,.search,.steps,.pay{grid-template-columns:minmax(0,1fr)}
+  .pay li:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-13px;transform:translateX(-50%) rotate(90deg)}
   .gallery{columns:2}
   .bands{grid-template-columns:minmax(0,1fr);min-height:0}
   .band{flex-direction:row;align-items:baseline;justify-content:space-between;flex-wrap:wrap;min-height:4.2rem}

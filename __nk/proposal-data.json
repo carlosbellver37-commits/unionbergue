@@ -415,6 +415,52 @@
           ]
         ]
       }
+    },
+    "bergue-montecarmelo": {
+      "propuesta": {
+        "payment": {
+          "title": "Cómo se paga",
+          "intro": "Los 250 € se pagan en dos veces, la mitad al empezar y la otra mitad al publicar.",
+          "steps": [
+            {
+              "tag": "Primer pago",
+              "amount": "125 €",
+              "sub": "50 %",
+              "title": "Empezamos",
+              "text": "Con el primer pago el plazo vuelve a empezar: tenéis 7 días completos para pedir cambios."
+            },
+            {
+              "tag": "A los 7 días",
+              "amount": "7 días",
+              "sub": "",
+              "title": "La web, terminada",
+              "text": "Aplicamos vuestros cambios y la dejamos lista para publicar."
+            },
+            {
+              "tag": "Segundo pago",
+              "amount": "125 €",
+              "sub": "50 %",
+              "title": "Publicamos",
+              "text": "Al recibir el otro 50 % y dejar domiciliada la cuota mensual de 20 €, publicamos la web."
+            }
+          ],
+          "note": "La cuota de 20 €/mes se domicilia al publicar. Todo con IVA incluido."
+        },
+        "next": [
+          [
+            "Pagáis el 50 %",
+            "125 €. El plazo de 7 días para pedir cambios vuelve a empezar."
+          ],
+          [
+            "Terminamos la web",
+            "Con vuestros cambios y datos: teléfono, WhatsApp, correo y horarios. A los 7 días queda lista."
+          ],
+          [
+            "Segundo pago y publicamos",
+            "Otro 50 %, domiciliáis la cuota mensual y la ponemos online con el SEO y el GEO preparados."
+          ]
+        ]
+      }
     }
   }
 }

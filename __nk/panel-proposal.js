@@ -116,6 +116,21 @@
     ]));
   }
 
+  function paymentBlock(p) {
+    return reveal(h('section', {}, [
+      h('div', { class: 'sec-head' }, [h('h2', {}, p.title), h('p', { class: 'note' }, p.intro)]),
+      list('pay', p.steps.map(function (s) {
+        return h('li', {}, [
+          h('span', { class: 'pay-tag' }, s.tag),
+          h('div', { class: 'pay-amt' }, [s.amount, s.sub ? h('small', {}, s.sub) : null]),
+          h('b', {}, s.title),
+          h('span', { class: 'pay-text' }, s.text)
+        ]);
+      })),
+      h('p', { class: 'note' }, p.note)
+    ]));
+  }
+
   function includes(d) {
     return reveal(h('section', {}, [
       h('div', { class: 'sec-head' }, h('h2', {}, d.includesTitle)),
@@ -169,7 +184,7 @@
 
   function proposalView(d, ticker) {
     d = Object.assign({}, d, { days_note: 'Cualquier duda, escríbenos y lo vemos.' });
-    return [hero(d), priceCard(d.price), includes(d), daysBlock(d.changes, ticker), searchBlock(d), nextBlock(d)];
+    return [hero(d), priceCard(d.price)].concat(d.payment ? [paymentBlock(d.payment)] : [], [includes(d), daysBlock(d.changes, ticker), searchBlock(d), nextBlock(d)]);
   }
 
   function brandingView(d, zoom) {
