@@ -215,7 +215,8 @@ export default async function middleware(request) {
   if (session && session.role === 'client' && (await isStaleClient(session))) session = null;
   if (!session) {
     if (url.pathname.startsWith('/__nk/')) return json({ error: 'unauthorized' }, 401);
-    return html(gatePage('', env('NK_PROJECT')), 401);
+    // 200 y no 401: WhatsApp y otros rastreadores ignoran la vista previa de páginas con error.
+    return html(gatePage('', env('NK_PROJECT')), 200);
   }
 
   if (url.pathname === '/__nk/status') return status(session);
