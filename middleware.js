@@ -98,6 +98,22 @@ async function deadlineFor(session) {
   return (start || session.start) + TRIAL_DAYS * DAY_MS;
 }
 
+// Una sesión de cliente solo vale mientras el reloj del servidor sea el suyo.
+// Tras un reinicio (sin fecha) o con una fecha más nueva, la cookie vieja caduca y pide contraseña.
+// Si no se puede leer el reloj, se confía en la cookie para no echar a nadie por un fallo puntual.
+async function isStaleClient(session) {
+  try {
+    const cached = await readStartCached();
+    if (cached !== null && cached <= session.start) return false;
+    const fresh = await readStart();
+    startCache = { value: fresh, at: Date.now() };
+    return fresh === null || fresh > session.start;
+  } catch (error) {
+    console.error('[nukleo-preview] sesión:', error.message);
+    return false;
+  }
+}
+
 // Solo el equipo: reinicia el plazo (borra la fecha) o fija una nueva.
 async function timer(request, session) {
   if (session.role !== 'admin') return json({ error: 'solo el equipo' }, 403);
@@ -196,7 +212,8 @@ export default async function middleware(request) {
 
   if (url.pathname === '/__nk/login' && request.method === 'POST') return login(request);
 
-  const session = await readSession(request);
+  let session = await readSession(request);
+  if (session && session.role === 'client' && (await isStaleClient(session))) session = null;
   if (!session) {
     if (url.pathname.startsWith('/__nk/')) return json({ error: 'unauthorized' }, 401);
     return html(gatePage('', env('NK_PROJECT')), 401);
