@@ -43,6 +43,7 @@
     '.pill{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:999px;background:rgba(20,20,15,.92);font-weight:600;font-variant-numeric:tabular-nums;backdrop-filter:blur(8px);box-shadow:0 6px 24px rgba(0,0,0,.28)}' +
     '.pill i{width:8px;height:8px;border-radius:50%;background:#5f86c4;flex:none}.pill.low i{background:#ff9d8a}' +
     '.pill .sep{opacity:.4}.pill .cnt{background:rgba(243,241,234,.16);padding:2px 9px;border-radius:999px}' +
+    '.prop{padding:10px 18px;border-radius:999px;background:#f3f1ea;color:#14140f;font-weight:700;box-shadow:0 6px 24px rgba(0,0,0,.28)}.prop:hover{background:#fff}.prop:focus-visible{outline-color:#5f86c4}' +
     '.card{display:none;width:min(300px,calc(100vw - 32px));padding:16px;border-radius:20px;background:rgba(20,20,15,.96);box-shadow:0 18px 44px rgba(0,0,0,.4);gap:14px}' +
     '.card.on{display:grid}' +
     '.cap{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:rgba(243,241,234,.55);margin:0 0 6px}' +
@@ -59,7 +60,8 @@
   var wrap = h('div', { class: 'w' });
   var card = h('div', { class: 'card', role: 'region', 'aria-label': 'Plazo y resumen de cambios' });
   var pill = h('button', { class: 'pill', type: 'button', 'aria-expanded': 'false', onclick: toggle });
-  wrap.appendChild(card); wrap.appendChild(pill);
+  var propBtn = h('button', { class: 'prop', type: 'button', onclick: function () { if (window.__nkOpenProposal) window.__nkOpenProposal(); } }, 'Ver propuesta');
+  wrap.appendChild(card); wrap.appendChild(propBtn); wrap.appendChild(pill);
   shadow.appendChild(style); shadow.appendChild(wrap);
 
   function toggle() {
@@ -135,7 +137,7 @@
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && open) toggle(); });
   document.addEventListener('pointerdown', function (event) { if (open && event.composedPath().indexOf(host) === -1) toggle(); });
 
-  window.__nkSummaryApi = { rect: function () { return pill.getBoundingClientRect(); } };
+  window.__nkSummaryApi = { rect: function () { return pill.getBoundingClientRect(); }, proposalRect: function () { return propBtn.getBoundingClientRect(); } };
   document.documentElement.appendChild(host);
   panel.subscribe(function (list) { notes = list; render(); });
   setInterval(render, 1000);

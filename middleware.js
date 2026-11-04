@@ -11,7 +11,7 @@ const TRIAL_DAYS = 7;
 const COOKIE = 'nk_access';
 const SESSION_DAYS = 30;
 const START_CACHE_MS = 20 * 1000;
-const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js']);
+const PUBLIC_PATHS = new Set(['/__nk/preview.js', '/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-editor.js', '/__nk/panel-tour.js', '/__nk/panel-proposal.js']);
 
 const enc = new TextEncoder();
 const env = (key) => process.env[key] || '';
@@ -172,7 +172,11 @@ async function login(request) {
 }
 
 async function status(session) {
-  const accent = themeFor(env('NK_PROJECT')).accent;
+  const t = themeFor(env('NK_PROJECT'));
+  const accent = t.accent;
+  const site = t.label;
+  const sub = t.sub;
+  const theme = { page: t.page, panel: t.panel, ink: t.ink, soft: t.soft, accent: t.accent, tint: t.tint };
   const v = env('VERCEL_DEPLOYMENT_ID') || String(Date.now());
   if (session.role === 'admin') {
     let start = null;
@@ -181,9 +185,9 @@ async function status(session) {
     } catch (error) {
       console.error('[nukleo-preview]', error.message);
     }
-    return json({ role: 'admin', days: TRIAL_DAYS, accent, v, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
+    return json({ role: 'admin', days: TRIAL_DAYS, accent, site, sub, theme, v, expires: start ? start + TRIAL_DAYS * DAY_MS : null });
   }
-  return json({ role: 'client', days: TRIAL_DAYS, accent, v, expires: await deadlineFor(session) });
+  return json({ role: 'client', days: TRIAL_DAYS, accent, site, sub, theme, v, expires: await deadlineFor(session) });
 }
 
 export default async function middleware(request) {

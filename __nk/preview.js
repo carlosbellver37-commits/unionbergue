@@ -3,8 +3,8 @@
   'use strict';
   var SEEN_KEY = 'nk-intro-seen';
   var ALWAYS_SHOW = false; // true: el tutorial sale en cada entrada. Poner false para que salga solo una vez por sesión.
-  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-tour.js'];
-  var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js'];
+  var CLIENT_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-summary.js', '/__nk/panel-proposal.js', '/__nk/panel-tour.js'];
+  var TEAM_SCRIPTS = ['/__nk/panel.js', '/__nk/panel-editor.js', '/__nk/panel-summary.js', '/__nk/panel-proposal.js'];
   var root = document.documentElement;
 
   function injectStyles() {

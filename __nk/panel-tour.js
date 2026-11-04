@@ -12,7 +12,8 @@
     { key: 'zone', title: 'Marcar una zona', text: 'Pulsa aquí y arrastra sobre la web para rodear una zona o una imagen.' },
     { key: 'text', title: 'Cambiar un texto', text: 'Pulsa aquí, toca cualquier texto y escribe cómo quieres que quede.' },
     { key: 'list', title: 'Mis cambios', text: 'Aquí ves todo lo que has pedido. Puedes editarlo, moverlo o borrarlo cuando quieras.' },
-    { key: 'timer', title: 'Tu tiempo', text: 'Abajo a la izquierda ves cuánto queda de la propuesta y un resumen de lo que has pedido.' }
+    { key: 'timer', title: 'Tu tiempo', text: 'Abajo a la izquierda ves cuánto queda de la propuesta y un resumen de lo que has pedido.' },
+    { key: 'proposal', title: 'La propuesta', text: 'Aquí tienes el precio, lo que incluye la web y el branding de la marca. Puedes verla cuando quieras.' }
   ];
 
   var index = 0;
@@ -54,6 +55,7 @@
     '@media (prefers-reduced-motion:reduce){.spot{transition:none}.spot::after{animation:none}}';
 
   function rectFor(step) {
+    if (step.key === 'proposal') return window.__nkSummaryApi && window.__nkSummaryApi.proposalRect ? window.__nkSummaryApi.proposalRect() : null;
     if (step.key === 'timer') return window.__nkSummaryApi && window.__nkSummaryApi.rect ? window.__nkSummaryApi.rect() : null;
     return panel.toolRect ? panel.toolRect(step.key) : null;
   }
@@ -69,7 +71,7 @@
       else tip.style.top = '16px';
       return;
     }
-    if (step.key === 'timer') {
+    if (step.key === 'timer' || step.key === 'proposal') {
       tip.style.left = Math.max(16, rect.left) + 'px';
       tip.style.bottom = (vh - rect.top + 18) + 'px';
       return;
